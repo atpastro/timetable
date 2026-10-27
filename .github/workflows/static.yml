@@ -1,4 +1,4 @@
-Name: Deploy static content to Pages
+name: Deploy static content to Pages
 
 on:
   push:
@@ -27,7 +27,7 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
-          enablement: true # <-- Moved here
+          enablement: true
           
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

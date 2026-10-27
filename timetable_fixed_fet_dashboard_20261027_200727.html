@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ωρολόγιο Πρόγραμμα - Κενά & Προγράμματα</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Σχολικό Πρόγραμμα">
+    <meta name="theme-color" content="#2563eb">
+
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body id="bodyRoot" class="bg-slate-50 text-slate-800 min-h-screen p-3 md:p-6 transition-colors duration-200">
+    <div class="max-w-4xl mx-auto space-y-4">
+
+        <!-- Header -->
+        <div class="bg-white dark:bg-slate-800 dark:text-white rounded-2xl shadow-sm p-5 flex justify-between items-center transition-colors">
+            <div>
+                <h1 class="text-xl font-bold">🏫 Ωρολόγιο Πρόγραμμα & Κενά</h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Διαχείριση ωρών & προγραμμάτων</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="showPwaModal()" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-300 hover:bg-blue-100 p-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1" title="Εγκατάσταση στο κινητό">
+                    📱 App
+                </button>
+                <button onclick="toggleDarkMode()" class="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 p-2.5 rounded-xl text-sm transition">
+                    🌙 / ☀️
+                </button>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs & Controls -->
+        <div class="bg-white dark:bg-slate-800 dark:text-white rounded-2xl shadow-sm p-4 space-y-3 transition-colors">
+            <div class="grid grid-cols-4 gap-1 bg-slate-100 dark:bg-slate-700 p-1 rounded-xl text-center">
+                <button onclick="switchTab('teacher')" id="tabTeacher" class="py-2 px-0.5 rounded-lg text-[11px] font-bold bg-white dark:bg-slate-900 text-blue-600 shadow-sm transition">👨‍🏫 Καθηγ.</button>
+                <button onclick="switchTab('class')" id="tabClass" class="py-2 px-0.5 rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-300 transition">📚 Τμήμα</button>
+                <button onclick="switchTab('day')" id="tabDay" class="py-2 px-0.5 rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-300 transition">📅 Ημέρα</button>
+                <button onclick="switchTab('stats')" id="tabStats" class="py-2 px-0.5 rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-300 transition">📊 Στατ.</button>
+            </div>
+
+            <div class="flex gap-2 items-end" id="controlGroup">
+                <div class="flex-1">
+                    <label id="dropdownLabel" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Επιλογή</label>
+                    <select id="dynamicSelect" onchange="renderView()" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <!-- Dynamic options -->
+                    </select>
+                </div>
+                <button onclick="exportICS()" id="icsBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-4 py-3 rounded-xl transition shadow-sm h-[46px] flex items-center gap-1">
+                    📅 ICS
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Display Container -->
+        <div id="resultsContainer" class="space-y-4">
+            <!-- Cards rendered here -->
+        </div>
+
+    </div>
+
+    <!-- PWA Modal Instructions -->
+    <div id="pwaModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-slate-800 dark:text-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl">
+            <h3 class="font-bold text-base flex items-center gap-2">📱 Εγκατάσταση στο Κινητό</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                Για να έχετε το πρόγραμμα στην αρχική οθόνη του κινητού σας σαν κανονική εφαρμογή:
+            </p>
+            <div class="space-y-2 text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
+                <p><strong>🍎 iPhone (Safari):</strong> Πατήστε το κουμπί <strong>Κοινοποίηση (Share)</strong> ⎋ και έπειτα <em>"Προσθήκη στην Αρχική Οθόνη"</em>.</p>
+                <p><strong>🤖 Android (Chrome):</strong> Πατήστε τις <strong>τρεις τελείες (Menu)</strong> ⋮ επάνω δεξιά και έπειτα <em>"Προσθήκη στην αρχική οθόνη"</em>.</p>
+            </div>
+            <button onclick="closePwaModal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs py-3 rounded-xl transition">
+                Κατάλαβα
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const masterData = [{"teacher": "Π. ΓΙΑΧΟΥ", "day": "Δευτέρα", "time": "10:55", "lesson": "Ζ.Δ.Δ", "className": "Α1"}, {"teacher": "Π. ΓΙΑΧΟΥ", "day": "Τρίτη", "time": "08:30", "lesson": "ΔΙΕΥΘΥΝΤΡΙΑ", "className": ""}, {"teacher": "Π. ΓΙΑΧΟΥ", "day": "Τρίτη", "time": "09:15", "lesson": "ΔΙΕΥΘΥΝΤΡΙΑ", "className": ""}, {"teacher": "Π. ΓΙΑΧΟΥ", "day": "Τρίτη", "time": "10:05", "lesson": "ΔΙΕΥΘΥΝΤΡΙΑ", "className": ""}, {"teacher": "Π. ΓΙΑΧΟΥ", "day": "Τετάρτη", "time": "12:30", "lesson": "Σύγχρ. Περιβ. Γραφ. (Ε)", "className": "ΓΟ"}, {"teacher": "Π. ΓΙΑΧΟΥ", "day": "Τετάρτη", "time": "13:15", "lesson": "Σύγχρ. Περιβ. Γραφ. (Ε)", "className": "ΓΟ"}, {"teacher": "Π. ΓΙΑΧΟΥ", "day": "Πέμπτη", "time": "08:30", "lesson": "Π. ΓΙΑΧΟΥ", "className": ""}, {"teacher": "Π. ΓΙΑΧΟΥ", "day": "Πέμπτη", "time": "10:05", "lesson": "ΔΙΕΥΘΥΝΤΡΙΑ", "className": ""}, {"teacher": "Π. ΓΙΑΧΟΥ", "day": "Παρασκευή", "time": "08:30", "lesson": "Π. ΓΙΑΧΟΥ", "className": ""}, {"teacher": "Π. ΓΙΑΧΟΥ", "day": "Παρασκευή", "time": "10:05", "lesson": "ΔΙΕΥΘΥΝΤΡΙΑ", "className": ""}, {"teacher": "Π. ΓΙΑΧΟΥ", "day": "Παρασκευή", "time": "11:45", "lesson": "Χρηματ. Συν. (Ε)", "className": "ΒΟ"}, {"teacher": "Π. ΓΙΑΧΟΥ", "day": "Παρασκευή", "time": "12:30", "lesson": "Χρηματ. Συν. (Ε)", "className": "ΒΟ"}, {"teacher": "Χ.ΑΓΙΑΝΝΙΔΗ", "day": "Δευτέρα", "time": "08:30", "lesson": "Άλγεβρα", "className": "Α2"}, {"teacher": "Χ.ΑΓΙΑΝΝΙΔΗ", "day": "Δευτέρα", "time": "09:15", "lesson": "Άλγεβρα", "className": "Α1"}, {"teacher": "Χ.ΑΓΙΑΝΝΙΔΗ", "day": "Δευτέρα", "time": "10:05", "lesson": "Άλγεβρα", "className": "Α1"}, {"teacher": "Χ.ΑΓΙΑΝΝΙΔΗ", "day": "Τρίτη", "time": "12:30", "lesson": "Άλγεβρα", "className": "ΓΥ"}, {"teacher": "Χ.ΑΓΙΑΝΝΙΔΗ", "day": "Τρίτη", "time": "13:15", "lesson": "Άλγεβρα", "className": "ΓΘ, ΓΟ"}, {"teacher": "Χ.ΑΓΙΑΝΝΙΔΗ", "day": "Τετάρτη", "time": "10:05", "lesson": "Άλγεβρα", "className": "ΓΗ, ΓΠ"}, {"teacher": "Χ.ΑΓΙΑΝΝΙΔΗ", "day": "Τετάρτη", "time": "10:55", "lesson": "Γεωμετρία", "className": "ΓΥ"}, {"teacher": "Χ.ΑΓΙΑΝΝΙΔΗ", "day": "Τετάρτη", "time": "11:45", "lesson": "Άλγεβρα", "className": "ΓΘ, ΓΟ"}, {"teacher": "Χ.ΑΓΙΑΝΝΙΔΗ", "day": "Τετάρτη", "time": "13:15", "lesson": "Γεωμετρία", "className": "ΓΗ, ΓΠ"}, {"teacher": "Χ.ΑΓΙΑΝΝΙΔΗ", "day": "Πέμπτη", "time": "10:05", "lesson": "Γεωμετρία", "className": "ΓΘ, ΓΟ"}, {"teacher": "Χ.ΑΓΙΑΝΝΙΔΗ", "day": "Πέμπτη", "time": "10:55", "lesson": "Άλγεβρα", "className": "ΓΗ, ΓΠ"}, {"teacher": "Χ.ΑΓΙΑΝΝΙΔΗ", "day": "Πέμπτη", "time": "11:45", "lesson": "Άλγεβρα", "className": "Α2"}, {"teacher": "Χ.ΑΓΙΑΝΝΙΔΗ", "day": "Παρασκευή", "time": "08:30", "lesson": "Άλγεβρα", "className": "ΓΥ"}, {"teacher": "Χ.ΑΓΙΑΝΝΙΔΗ", "day": "Παρασκευή", "time": "10:05", "lesson": "Άλγεβρα", "className": "Α1"}, {"teacher": "Χ.ΑΓΙΑΝΝΙΔΗ", "day": "Παρασκευή", "time": "11:45", "lesson": "Γεωμετρία", "className": "Α1"}, {"teacher": "Χ.ΑΓΙΑΝΝΙΔΗ", "day": "Παρασκευή", "time": "12:30", "lesson": "Γεωμετρία", "className": "Α2"}, {"teacher": "Χ.ΑΓΙΑΝΝΙΔΗ", "day": "Παρασκευή", "time": "13:15", "lesson": "Άλγεβρα", "className": "Α2"}, {"teacher": "Ι. ΘΕΟΧΑΡΗΣ", "day": "Δευτέρα", "time": "10:05", "lesson": "Τεχν. Μηχ. Κατασκ. (Ε)", "className": "ΒΜ"}, {"teacher": "Ι. ΘΕΟΧΑΡΗΣ", "day": "Δευτέρα", "time": "10:55", "lesson": "Τεχν. Μηχ. Κατασκ. (Ε)", "className": "ΒΜ"}, {"teacher": "Ι. ΘΕΟΧΑΡΗΣ", "day": "Τρίτη", "time": "09:15", "lesson": "Κατ. και Λειτ. Κεντρ. Θέρμ. (Ε)", "className": "ΓΘ"}, {"teacher": "Ι. ΘΕΟΧΑΡΗΣ", "day": "Τρίτη", "time": "10:05", "lesson": "Κατ. και Λειτ. Κεντρ. Θέρμ. (Ε)", "className": "ΓΘ"}, {"teacher": "Ι. ΘΕΟΧΑΡΗΣ", "day": "Τρίτη", "time": "10:55", "lesson": "Κατ. και Λειτ. Κεντρ. Θέρμ. (Ε)", "className": "ΓΘ"}, {"teacher": "Ι. ΘΕΟΧΑΡΗΣ", "day": "Τετάρτη", "time": "09:15", "lesson": "Υδρ.-Αποχ. (Θ)", "className": "ΓΘ"}, {"teacher": "Ι. ΘΕΟΧΑΡΗΣ", "day": "Τετάρτη", "time": "10:05", "lesson": "Υδρ.-Αποχ. (Θ)", "className": "ΓΘ"}, {"teacher": "Ι. ΘΕΟΧΑΡΗΣ", "day": "Τετάρτη", "time": "10:55", "lesson": "Υδρ.-Αποχ. (Θ)", "className": "ΓΘ"}, {"teacher": "Ι. ΘΕΟΧΑΡΗΣ", "day": "Πέμπτη", "time": "08:30", "lesson": "Τεχν. Μηχ. Κατασκ. (Ε)", "className": "ΒΜ"}, {"teacher": "Ι. ΘΕΟΧΑΡΗΣ", "day": "Πέμπτη", "time": "09:15", "lesson": "Τεχν. Μηχ. Κατασκ. (Ε)", "className": "ΒΜ"}, {"teacher": "Ι. ΘΕΟΧΑΡΗΣ", "day": "Πέμπτη", "time": "10:05", "lesson": "Τεχν. Μηχ. Κατασκ. (Ε)", "className": "ΒΜ"}, {"teacher": "Ι. ΘΕΟΧΑΡΗΣ", "day": "Παρασκευή", "time": "08:30", "lesson": "Κατ. και Λειτ. Κεντρ. Θέρμ. (Ε)", "className": "ΓΘ"}, {"teacher": "Ι. ΘΕΟΧΑΡΗΣ", "day": "Παρασκευή", "time": "09:15", "lesson": "Κατ. και Λειτ. Κεντρ. Θέρμ. (Ε)", "className": "ΓΘ"}, {"teacher": "Ι. ΘΕΟΧΑΡΗΣ", "day": "Παρασκευή", "time": "10:55", "lesson": "Συντ. και Επισκ. Εγκατ. (Ε)", "className": "ΓΘ"}, {"teacher": "Ι. ΘΕΟΧΑΡΗΣ", "day": "Παρασκευή", "time": "11:45", "lesson": "Συντ. και Επισκ. Εγκατ. (Ε)", "className": "ΓΘ"}, {"teacher": "Ι. ΘΕΟΧΑΡΗΣ", "day": "Παρασκευή", "time": "12:30", "lesson": "Συντ. και Επισκ. Εγκατ. (Ε)", "className": "ΓΘ"}, {"teacher": "Μ.ΒΑΣΙΛΑΡΑ", "day": "Δευτέρα", "time": "08:30", "lesson": "Νέα Ελλην.", "className": "ΓΗ, ΓΠ"}, {"teacher": "Μ.ΒΑΣΙΛΑΡΑ", "day": "Δευτέρα", "time": "10:05", "lesson": "Νέα Ελλην.", "className": "ΓΥ"}, {"teacher": "Μ.ΒΑΣΙΛΑΡΑ", "day": "Δευτέρα", "time": "10:55", "lesson": "Νέα Ελλην.", "className": "ΓΥ"}, {"teacher": "Μ.ΒΑΣΙΛΑΡΑ", "day": "Δευτέρα", "time": "11:45", "lesson": "Νέα Ελλην.", "className": "ΒΜ, ΒΠ, ΒΥ"}, {"teacher": "Μ.ΒΑΣΙΛΑΡΑ", "day": "Δευτέρα", "time": "12:30", "lesson": "Νέα Ελλην.", "className": "ΒΜ, ΒΠ, ΒΥ"}, {"teacher": "Μ.ΒΑΣΙΛΑΡΑ", "day": "Τρίτη", "time": "09:15", "lesson": "Νέα Ελλην.", "className": "Α2"}, {"teacher": "Μ.ΒΑΣΙΛΑΡΑ", "day": "Τρίτη", "time": "10:05", "lesson": "Νέα Ελλην.", "className": "Α2"}, {"teacher": "Μ.ΒΑΣΙΛΑΡΑ", "day": "Τρίτη", "time": "11:45", "lesson": "Νέα Ελλην.", "className": "Α1"}, {"teacher": "Μ.ΒΑΣΙΛΑΡΑ", "day": "Τρίτη", "time": "12:30", "lesson": "Νέα Ελλην.", "className": "Α1"}, {"teacher": "Μ.ΒΑΣΙΛΑΡΑ", "day": "Τρίτη", "time": "13:15", "lesson": "Νέα Ελλην.", "className": "ΒΜ, ΒΠ, ΒΥ"}, {"teacher": "Μ.ΒΑΣΙΛΑΡΑ", "day": "Τετάρτη", "time": "08:30", "lesson": "Νέα Ελλην.", "className": "ΓΗ, ΓΠ"}, {"teacher": "Μ.ΒΑΣΙΛΑΡΑ", "day": "Τετάρτη", "time": "09:15", "lesson": "Νέα Ελλην.", "className": "ΓΗ, ΓΠ"}, {"teacher": "Μ.ΒΑΣΙΛΑΡΑ", "day": "Πέμπτη", "time": "08:30", "lesson": "Νέα Ελλην.", "className": "Α2"}, {"teacher": "Μ.ΒΑΣΙΛΑΡΑ", "day": "Πέμπτη", "time": "09:15", "lesson": "Νέα Ελλην.", "className": "Α2"}, {"teacher": "Μ.ΒΑΣΙΛΑΡΑ", "day": "Πέμπτη", "time": "10:05", "lesson": "Νέα Ελλην.", "className": "Α1"}, {"teacher": "Μ.ΒΑΣΙΛΑΡΑ", "day": "Πέμπτη", "time": "10:55", "lesson": "Νέα Ελλην.", "className": "Α1"}, {"teacher": "Μ.ΒΑΣΙΛΑΡΑ", "day": "Πέμπτη", "time": "12:30", "lesson": "Νέα Ελλην.", "className": "ΓΘ, ΓΟ"}, {"teacher": "Μ.ΒΑΣΙΛΑΡΑ", "day": "Πέμπτη", "time": "13:15", "lesson": "Νέα Ελλην.", "className": "ΓΘ, ΓΟ"}, {"teacher": "Μ.ΒΑΣΙΛΑΡΑ", "day": "Παρασκευή", "time": "10:05", "lesson": "Νέα Ελλην.", "className": "ΓΘ, ΓΟ"}, {"teacher": "Μ.ΒΑΣΙΛΑΡΑ", "day": "Παρασκευή", "time": "10:55", "lesson": "Νέα Ελλην.", "className": "ΓΥ"}, {"teacher": "Α.ΠΑΠΑΓΕΩΡΓΙΟΥ", "day": "Δευτέρα", "time": "09:15", "lesson": "Φυσική", "className": "ΓΘ, ΓΟ"}, {"teacher": "Α.ΠΑΠΑΓΕΩΡΓΙΟΥ", "day": "Δευτέρα", "time": "10:55", "lesson": "Βιολογία", "className": "Α2"}, {"teacher": "Α.ΠΑΠΑΓΕΩΡΓΙΟΥ", "day": "Δευτέρα", "time": "11:45", "lesson": "Χημεία", "className": "ΓΘ, ΓΟ"}, {"teacher": "Α.ΠΑΠΑΓΕΩΡΓΙΟΥ", "day": "Δευτέρα", "time": "13:15", "lesson": "Φυσική", "className": "ΒΜ, ΒΠ, ΒΥ"}, {"teacher": "Α.ΠΑΠΑΓΕΩΡΓΙΟΥ", "day": "Τρίτη", "time": "09:15", "lesson": "Φυσική", "className": "ΓΗ, ΓΠ"}, {"teacher": "Α.ΠΑΠΑΓΕΩΡΓΙΟΥ", "day": "Τρίτη", "time": "10:05", "lesson": "Χημεία", "className": "ΒΜ, ΒΠ, ΒΥ"}, {"teacher": "Α.ΠΑΠΑΓΕΩΡΓΙΟΥ", "day": "Τρίτη", "time": "10:55", "lesson": "Χημεία", "className": "ΓΥ"}, {"teacher": "Α.ΠΑΠΑΓΕΩΡΓΙΟΥ", "day": "Τρίτη", "time": "12:30", "lesson": "Φυσική", "className": "Α2"}, {"teacher": "Α.ΠΑΠΑΓΕΩΡΓΙΟΥ", "day": "Τετάρτη", "time": "08:30", "lesson": "Φυσική", "className": "ΓΘ, ΓΟ"}, {"teacher": "Α.ΠΑΠΑΓΕΩΡΓΙΟΥ", "day": "Τετάρτη", "time": "09:15", "lesson": "Βιολογία", "className": "Α1"}, {"teacher": "Α.ΠΑΠΑΓΕΩΡΓΙΟΥ", "day": "Τετάρτη", "time": "10:05", "lesson": "Χημεία", "className": "Α2"}, {"teacher": "Α.ΠΑΠΑΓΕΩΡΓΙΟΥ", "day": "Τετάρτη", "time": "10:55", "lesson": "Φυσική", "className": "Α1"}, {"teacher": "Α.ΠΑΠΑΓΕΩΡΓΙΟΥ", "day": "Τετάρτη", "time": "12:30", "lesson": "Χημεία", "className": "ΓΗ, ΓΠ"}, {"teacher": "Α.ΠΑΠΑΓΕΩΡΓΙΟΥ", "day": "Πέμπτη", "time": "09:15", "lesson": "Φυσική", "className": "Α1"}, {"teacher": "Α.ΠΑΠΑΓΕΩΡΓΙΟΥ", "day": "Πέμπτη", "time": "10:05", "lesson": "Φυσική", "className": "ΓΥ"}, {"teacher": "Α.ΠΑΠΑΓΕΩΡΓΙΟΥ", "day": "Πέμπτη", "time": "11:45", "lesson": "Χημεία", "className": "ΒΟ, ΒΗ"}, {"teacher": "Α.ΠΑΠΑΓΕΩΡΓΙΟΥ", "day": "Πέμπτη", "time": "12:30", "lesson": "Φυσική", "className": "ΒΟ, ΒΗ"}, {"teacher": "Α.ΠΑΠΑΓΕΩΡΓΙΟΥ", "day": "Πέμπτη", "time": "13:15", "lesson": "Χημεία", "className": "Α1"}, {"teacher": "Α.ΠΑΠΑΓΕΩΡΓΙΟΥ", "day": "Παρασκευή", "time": "08:30", "lesson": "Φυσική", "className": "ΓΗ, ΓΠ"}, {"teacher": "Α.ΠΑΠΑΓΕΩΡΓΙΟΥ", "day": "Παρασκευή", "time": "09:15", "lesson": "Φυσική", "className": "ΓΥ"}, {"teacher": "Α.ΠΑΠΑΓΕΩΡΓΙΟΥ", "day": "Παρασκευή", "time": "10:55", "lesson": "Φυσική", "className": "Α2"}, {"teacher": "Α.ΑΡΟΥΚΑΤΟΥ", "day": "Δευτέρα", "time": "09:15", "lesson": "Αγγλικά Τομέα", "className": "ΒΥ"}, {"teacher": "Α.ΑΡΟΥΚΑΤΟΥ", "day": "Δευτέρα", "time": "10:05", "lesson": "Αγγλικά.", "className": "Α2"}, {"teacher": "Α.ΑΡΟΥΚΑΤΟΥ", "day": "Δευτέρα", "time": "11:45", "lesson": "Αγγλικά.", "className": "ΒΟ, ΒΗ"}, {"teacher": "Α.ΑΡΟΥΚΑΤΟΥ", "day": "Τρίτη", "time": "08:30", "lesson": "Ιστορία", "className": "Α2"}, {"teacher": "Α.ΑΡΟΥΚΑΤΟΥ", "day": "Τρίτη", "time": "09:15", "lesson": "Αγγλικά Τομέα", "className": "ΒΥ"}, {"teacher": "Α.ΑΡΟΥΚΑΤΟΥ", "day": "Τρίτη", "time": "10:55", "lesson": "Α.ΑΡΟΥΚΑΤΟΥ, Δ.ΟΥΣΤΑΣ Ζ.Δ.Δ", "className": "Α2"}, {"teacher": "Α.ΑΡΟΥΚΑΤΟΥ", "day": "Τρίτη", "time": "11:45", "lesson": "Αγγλικά Τομέα", "className": "ΒΠ"}, {"teacher": "Α.ΑΡΟΥΚΑΤΟΥ", "day": "Τετάρτη", "time": "10:05", "lesson": "Αγγλικά.", "className": "Α1"}, {"teacher": "Α.ΑΡΟΥΚΑΤΟΥ", "day": "Τετάρτη", "time": "11:45", "lesson": "Αγγλικά Τομέα", "className": "ΒΗ"}, {"teacher": "Α.ΑΡΟΥΚΑΤΟΥ", "day": "Τετάρτη", "time": "12:30", "lesson": "Αγγλικά.", "className": "ΓΥ"}, {"teacher": "Α.ΑΡΟΥΚΑΤΟΥ", "day": "Τετάρτη", "time": "13:15", "lesson": "Αγγλικά Τομέα", "className": "ΒΜ"}, {"teacher": "Α.ΑΡΟΥΚΑΤΟΥ", "day": "Πέμπτη", "time": "08:30", "lesson": "Αγγλικά.", "className": "ΓΘ, ΓΟ"}, {"teacher": "Α.ΑΡΟΥΚΑΤΟΥ", "day": "Πέμπτη", "time": "09:15", "lesson": "Αγγλικά Τομέα", "className": "ΒΟ"}, {"teacher": "Α.ΑΡΟΥΚΑΤΟΥ", "day": "Πέμπτη", "time": "10:05", "lesson": "Α.ΑΡΟΥΚΑΤΟΥ, Δ.ΟΥΣΤΑΣ Ζ.Δ.Δ", "className": "Α2"}, {"teacher": "Α.ΑΡΟΥΚΑΤΟΥ", "day": "Πέμπτη", "time": "10:55", "lesson": "Αγγλικά.", "className": "Α2"}, {"teacher": "Α.ΑΡΟΥΚΑΤΟΥ", "day": "Πέμπτη", "time": "12:30", "lesson": "Αγγλικά.", "className": "Α1"}, {"teacher": "Α.ΑΡΟΥΚΑΤΟΥ", "day": "Πέμπτη", "time": "13:15", "lesson": "Αγγλικά.", "className": "ΒΜ, ΒΠ, ΒΥ"}, {"teacher": "Α.ΑΡΟΥΚΑΤΟΥ", "day": "Παρασκευή", "time": "09:15", "lesson": "Αγγλικά Τομέα", "className": "ΒΟ"}, {"teacher": "Α.ΑΡΟΥΚΑΤΟΥ", "day": "Παρασκευή", "time": "10:55", "lesson": "Ιστορία", "className": "Α1"}, {"teacher": "Α.ΑΡΟΥΚΑΤΟΥ", "day": "Παρασκευή", "time": "11:45", "lesson": "Α.ΑΡΟΥΚΑΤΟΥ, Δ.ΟΥΣΤΑΣ Ζ.Δ.Δ", "className": "Α2"}, {"teacher": "Α.ΑΡΟΥΚΑΤΟΥ", "day": "Παρασκευή", "time": "13:15", "lesson": "Αγγλικά.", "className": "ΓΗ, ΓΠ"}, {"teacher": "Δ.ΟΥΣΤΑΣ", "day": "Δευτέρα", "time": "10:05", "lesson": "Φυσ. Αγωγή.", "className": "ΓΗ, ΓΠ"}, {"teacher": "Δ.ΟΥΣΤΑΣ", "day": "Δευτέρα", "time": "10:55", "lesson": "Ζ.Δ.Δ", "className": "Α1"}, {"teacher": "Δ.ΟΥΣΤΑΣ", "day": "Τρίτη", "time": "10:55", "lesson": "Α.ΑΡΟΥΚΑΤΟΥ, Δ.ΟΥΣΤΑΣ Ζ.Δ.Δ", "className": "Α2"}, {"teacher": "Δ.ΟΥΣΤΑΣ", "day": "Τρίτη", "time": "12:30", "lesson": "Φυσ. Αγωγή.", "className": "ΒΜ, ΒΠ, ΒΥ"}, {"teacher": "Δ.ΟΥΣΤΑΣ", "day": "Τετάρτη", "time": "10:55", "lesson": "Φυσ. Αγωγή.", "className": "ΒΟ, ΒΗ"}, {"teacher": "Δ.ΟΥΣΤΑΣ", "day": "Τετάρτη", "time": "11:45", "lesson": "Φυσ. Αγωγή.", "className": "Α2"}, {"teacher": "Δ.ΟΥΣΤΑΣ", "day": "Τετάρτη", "time": "12:30", "lesson": "Σ.Ε.Π.", "className": "Α2"}, {"teacher": "Δ.ΟΥΣΤΑΣ", "day": "Πέμπτη", "time": "08:30", "lesson": "Π. ΓΙΑΧΟΥ", "className": ""}, {"teacher": "Δ.ΟΥΣΤΑΣ", "day": "Πέμπτη", "time": "09:15", "lesson": "Φυσ. Αγωγή.", "className": "ΓΥ"}, {"teacher": "Δ.ΟΥΣΤΑΣ", "day": "Πέμπτη", "time": "10:05", "lesson": "Α.ΑΡΟΥΚΑΤΟΥ, Δ.ΟΥΣΤΑΣ Ζ.Δ.Δ", "className": "Α2"}, {"teacher": "Δ.ΟΥΣΤΑΣ", "day": "Πέμπτη", "time": "11:45", "lesson": "Φυσ. Αγωγή.", "className": "Α1"}, {"teacher": "Δ.ΟΥΣΤΑΣ", "day": "Πέμπτη", "time": "13:15", "lesson": "Σ.Ε.Π.", "className": "Α2"}, {"teacher": "Δ.ΟΥΣΤΑΣ", "day": "Παρασκευή", "time": "08:30", "lesson": "Π. ΓΙΑΧΟΥ", "className": ""}, {"teacher": "Δ.ΟΥΣΤΑΣ", "day": "Παρασκευή", "time": "09:15", "lesson": "Φυσ. Αγωγή.", "className": "Α2"}, {"teacher": "Δ.ΟΥΣΤΑΣ", "day": "Παρασκευή", "time": "11:45", "lesson": "Α.ΑΡΟΥΚΑΤΟΥ, Δ.ΟΥΣΤΑΣ Ζ.Δ.Δ", "className": "Α2"}, {"teacher": "Δ.ΟΥΣΤΑΣ", "day": "Παρασκευή", "time": "12:30", "lesson": "Φυσ. Αγωγή.", "className": "Α1"}, {"teacher": "Δ.ΟΥΣΤΑΣ", "day": "Παρασκευή", "time": "13:15", "lesson": "Φυσ. Αγωγή.", "className": "ΓΘ, ΓΟ"}, {"teacher": "Μ.-Α. ΓΑΡΑΝΤΖΙΩΤΗ", "day": "Δευτέρα", "time": "08:30", "lesson": "Αρχές Οικ.", "className": "Α1"}, {"teacher": "Μ.-Α. ΓΑΡΑΝΤΖΙΩΤΗ", "day": "Δευτέρα", "time": "09:15", "lesson": "Αρχές Οικ.", "className": "Α2"}, {"teacher": "Μ.-Α. ΓΑΡΑΝΤΖΙΩΤΗ", "day": "Δευτέρα", "time": "10:05", "lesson": "Α.Ο.Θ", "className": "ΓΟ"}, {"teacher": "Μ.-Α. ΓΑΡΑΝΤΖΙΩΤΗ", "day": "Δευτέρα", "time": "10:55", "lesson": "Φορολ. Πρακτ.(Θ)", "className": "ΓΟ"}, {"teacher": "Μ.-Α. ΓΑΡΑΝΤΖΙΩΤΗ", "day": "Δευτέρα", "time": "12:30", "lesson": "Οικον. Μαθ. και Στατ.", "className": "ΒΟ"}, {"teacher": "Μ.-Α. ΓΑΡΑΝΤΖΙΩΤΗ", "day": "Δευτέρα", "time": "13:15", "lesson": "Επικ. και Δημ. Σχ.(Θ)", "className": "ΓΟ"}, {"teacher": "Μ.-Α. ΓΑΡΑΝΤΖΙΩΤΗ", "day": "Τρίτη", "time": "08:30", "lesson": "Επικ. και Δημ. Σχ.(Θ)", "className": "ΓΟ"}, {"teacher": "Μ.-Α. ΓΑΡΑΝΤΖΙΩΤΗ", "day": "Τρίτη", "time": "09:15", "lesson": "Στοιχεία Δικαίου", "className": "ΒΟ"}, {"teacher": "Μ.-Α. ΓΑΡΑΝΤΖΙΩΤΗ", "day": "Τρίτη", "time": "10:55", "lesson": "Εισ. στο Μαρκετιγκ", "className": "ΒΟ"}, {"teacher": "Μ.-Α. ΓΑΡΑΝΤΖΙΩΤΗ", "day": "Τρίτη", "time": "11:45", "lesson": "Φορολ. Πρακτ.(Θ)", "className": "ΓΟ"}, {"teacher": "Μ.-Α. ΓΑΡΑΝΤΖΙΩΤΗ", "day": "Τρίτη", "time": "12:30", "lesson": "Σύγχρ. Περιβ Γραφ.(Θ)", "className": "ΓΟ"}, {"teacher": "Μ.-Α. ΓΑΡΑΝΤΖΙΩΤΗ", "day": "Τρίτη", "time": "13:15", "lesson": "Οικον. Μαθ. και Στατ.", "className": "ΒΟ"}, {"teacher": "Μ.-Α. ΓΑΡΑΝΤΖΙΩΤΗ", "day": "Τετάρτη", "time": "09:15", "lesson": "Εισ. στο Μαρκετιγκ", "className": "ΒΟ"}, {"teacher": "Μ.-Α. ΓΑΡΑΝΤΖΙΩΤΗ", "day": "Τετάρτη", "time": "10:05", "lesson": "Στοιχεία Δικαίου", "className": "ΒΟ"}, {"teacher": "Μ.-Α. ΓΑΡΑΝΤΖΙΩΤΗ", "day": "Τετάρτη", "time": "10:55", "lesson": "Α.Ο.Θ", "className": "ΓΟ"}, {"teacher": "Μ.-Α. ΓΑΡΑΝΤΖΙΩΤΗ", "day": "Πέμπτη", "time": "10:05", "lesson": "Στοιχεία Δικαίου", "className": "ΒΟ"}, {"teacher": "Μ.-Α. ΓΑΡΑΝΤΖΙΩΤΗ", "day": "Πέμπτη", "time": "12:30", "lesson": "Αρχές Οικ.", "className": "Α2"}, {"teacher": "Μ.-Α. ΓΑΡΑΝΤΖΙΩΤΗ", "day": "Παρασκευή", "time": "08:30", "lesson": "Στοιχεία Δικαίου", "className": "ΒΟ"}, {"teacher": "Μ.-Α. ΓΑΡΑΝΤΖΙΩΤΗ", "day": "Παρασκευή", "time": "09:15", "lesson": "Αρχές Οικ.", "className": "Α1"}, {"teacher": "Μ.-Α. ΓΑΡΑΝΤΖΙΩΤΗ", "day": "Παρασκευή", "time": "10:55", "lesson": "Α.Ο.Θ", "className": "ΓΟ"}, {"teacher": "Μ.-Α. ΓΑΡΑΝΤΖΙΩΤΗ", "day": "Παρασκευή", "time": "11:45", "lesson": "Σύγχρ. Περιβ Γραφ.(Θ)", "className": "ΓΟ"}, {"teacher": "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "day": "Δευτέρα", "time": "08:30", "lesson": "Αρχές Λογ. (Θ)", "className": "ΒΟ"}, {"teacher": "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "day": "Δευτέρα", "time": "09:15", "lesson": "Θεωρία Τουρ. (Ε)", "className": "ΒΟ"}, {"teacher": "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "day": "Δευτέρα", "time": "10:05", "lesson": "Θεωρία Τουρ. (Ε)", "className": "ΒΟ"}, {"teacher": "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "day": "Δευτέρα", "time": "10:55", "lesson": "Θεωρία Τουρ. (Ε)", "className": "ΒΟ"}, {"teacher": "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "day": "Δευτέρα", "time": "12:30", "lesson": "Α.Ο.Δ", "className": "ΓΟ"}, {"teacher": "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "day": "Τρίτη", "time": "09:15", "lesson": "Λογ. ΕφαρΜ. (Ε)", "className": "ΓΟ"}, {"teacher": "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "day": "Τρίτη", "time": "10:05", "lesson": "Λογ. ΕφαρΜ. (Ε)", "className": "ΓΟ"}, {"teacher": "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "day": "Τρίτη", "time": "10:55", "lesson": "Λογ. ΕφαρΜ. (Ε)", "className": "ΓΟ"}, {"teacher": "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "day": "Τετάρτη", "time": "08:30", "lesson": "Εισαγ. στην Εφοδ.", "className": "ΒΟ"}, {"teacher": "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "day": "Τετάρτη", "time": "09:15", "lesson": "Φορολ. Πρακτ.(Ε)", "className": "ΓΟ"}, {"teacher": "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "day": "Τετάρτη", "time": "10:05", "lesson": "Φορολ. Πρακτ.(Ε)", "className": "ΓΟ"}, {"teacher": "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "day": "Τετάρτη", "time": "11:45", "lesson": "Αρχές Λογ. (Ε)", "className": "ΒΟ"}, {"teacher": "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "day": "Τετάρτη", "time": "12:30", "lesson": "Αρχές Λογ. (Ε)", "className": "ΒΟ"}, {"teacher": "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "day": "Τετάρτη", "time": "13:15", "lesson": "Αρχές Λογ. (Ε)", "className": "ΒΟ"}, {"teacher": "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "day": "Πέμπτη", "time": "08:30", "lesson": "Αρχές Λογ. (Θ)", "className": "ΒΟ"}, {"teacher": "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "day": "Πέμπτη", "time": "09:15", "lesson": "Α.Ο.Δ", "className": "ΓΟ"}, {"teacher": "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "day": "Πέμπτη", "time": "10:55", "lesson": "Φορολ. Πρακτ.(Ε)", "className": "ΓΟ"}, {"teacher": "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "day": "Πέμπτη", "time": "11:45", "lesson": "Φορολ. Πρακτ.(Ε)", "className": "ΓΟ"}, {"teacher": "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "day": "Παρασκευή", "time": "08:30", "lesson": "Λογ. ΕφαρΜ. (Ε)", "className": "ΓΟ"}, {"teacher": "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "day": "Παρασκευή", "time": "09:15", "lesson": "Λογ. ΕφαρΜ. (Ε)", "className": "ΓΟ"}, {"teacher": "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "day": "Παρασκευή", "time": "10:05", "lesson": "Εισαγ. στην Εφοδ.", "className": "ΒΟ"}, {"teacher": "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "day": "Παρασκευή", "time": "10:55", "lesson": "Αρχές Λογ. (Θ)", "className": "ΒΟ"}, {"teacher": "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "day": "Παρασκευή", "time": "12:30", "lesson": "Α.Ο.Δ", "className": "ΓΟ"}, {"teacher": "Γ.ΦΡΑΓΚΟΥ", "day": "Δευτέρα", "time": "08:30", "lesson": "Στοιχ. Τεχν. Θερμοδυν. (Θ)", "className": "ΒΜ"}, {"teacher": "Γ.ΦΡΑΓΚΟΥ", "day": "Δευτέρα", "time": "09:15", "lesson": "Τεχν. Μηχ. Κατασκ. (Θ)", "className": "ΒΜ"}, {"teacher": "Γ.ΦΡΑΓΚΟΥ", "day": "Δευτέρα", "time": "10:05", "lesson": "Συντ. και Επισκ. Εγκατ. (Θ)", "className": "ΓΘ"}, {"teacher": "Γ.ΦΡΑΓΚΟΥ", "day": "Δευτέρα", "time": "12:30", "lesson": "Σχέδιο Ειδικ.", "className": "ΓΘ"}, {"teacher": "Γ.ΦΡΑΓΚΟΥ", "day": "Δευτέρα", "time": "13:15", "lesson": "Σχέδιο Ειδικ.", "className": "ΓΘ"}, {"teacher": "Γ.ΦΡΑΓΚΟΥ", "day": "Τρίτη", "time": "08:30", "lesson": "Συντ. και Επισκ. Εγκατ. (Θ)", "className": "ΓΘ"}, {"teacher": "Γ.ΦΡΑΓΚΟΥ", "day": "Τρίτη", "time": "09:15", "lesson": "Στοιχ. Τεχν. Θερμοδυν. (Θ)", "className": "ΒΜ"}, {"teacher": "Γ.ΦΡΑΓΚΟΥ", "day": "Τρίτη", "time": "10:55", "lesson": "Αρχές Μηχ.", "className": "Α1"}, {"teacher": "Γ.ΦΡΑΓΚΟΥ", "day": "Τρίτη", "time": "11:45", "lesson": "Στοιχ. Σχεδ. Κεντρ. Θερμ.", "className": "ΓΘ"}, {"teacher": "Γ.ΦΡΑΓΚΟΥ", "day": "Τετάρτη", "time": "10:55", "lesson": "Στοιχ. Τεχν. Θερμοδυν. (Θ)", "className": "ΒΜ"}, {"teacher": "Γ.ΦΡΑΓΚΟΥ", "day": "Τετάρτη", "time": "11:45", "lesson": "Αρχές Μηχ.", "className": "Α1"}, {"teacher": "Γ.ΦΡΑΓΚΟΥ", "day": "Τετάρτη", "time": "12:30", "lesson": "Στοιχ. Σχεδ. Κεντρ. Θερμ.", "className": "ΓΘ"}, {"teacher": "Γ.ΦΡΑΓΚΟΥ", "day": "Τετάρτη", "time": "13:15", "lesson": "Υδρ.-Αποχ. (Θ)", "className": "ΓΘ"}, {"teacher": "Γ.ΦΡΑΓΚΟΥ", "day": "Πέμπτη", "time": "09:15", "lesson": "Κατ.και Λειτ. Κεντρ. Θέρμ. (Θ)", "className": "ΓΘ"}, {"teacher": "Γ.ΦΡΑΓΚΟΥ", "day": "Πέμπτη", "time": "10:55", "lesson": "Στοιχ. Σχεδ. Κεντρ. Θερμ.", "className": "ΓΘ"}, {"teacher": "Γ.ΦΡΑΓΚΟΥ", "day": "Παρασκευή", "time": "09:15", "lesson": "Στοιχ. Τεχν. Θερμοδυν. (Ε)", "className": "ΒΜ"}, {"teacher": "Γ.ΦΡΑΓΚΟΥ", "day": "Παρασκευή", "time": "10:05", "lesson": "Στοιχ. Τεχν. Θερμοδυν. (Ε)", "className": "ΒΜ"}, {"teacher": "Γ.ΦΡΑΓΚΟΥ", "day": "Παρασκευή", "time": "10:55", "lesson": "Στοιχ. Τεχν. Θερμοδυν. (Ε)", "className": "ΒΜ"}, {"teacher": "Γ.ΦΡΑΓΚΟΥ", "day": "Παρασκευή", "time": "12:30", "lesson": "Τεχν. Μηχ. Κατασκ. (Θ)", "className": "ΒΜ"}, {"teacher": "Μ.ΔΙΑΜΑΝΤΟΠΟΥΛΟΥ", "day": "Δευτέρα", "time": "10:55", "lesson": "Στοιχεία Μηχανών", "className": "ΓΘ"}, {"teacher": "Μ.ΔΙΑΜΑΝΤΟΠΟΥΛΟΥ", "day": "Δευτέρα", "time": "11:45", "lesson": "Πληροφορική-Ερευνητική Εργασία", "className": "Α1"}, {"teacher": "Μ.ΔΙΑΜΑΝΤΟΠΟΥΛΟΥ", "day": "Δευτέρα", "time": "12:30", "lesson": "Πληροφορική-Ερευνητική Εργασία", "className": "Α1"}, {"teacher": "Μ.ΔΙΑΜΑΝΤΟΠΟΥΛΟΥ", "day": "Τρίτη", "time": "08:30", "lesson": "Σ.Ε.Π.", "className": "Α1"}, {"teacher": "Μ.ΔΙΑΜΑΝΤΟΠΟΥΛΟΥ", "day": "Τρίτη", "time": "09:15", "lesson": "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ, Μ.ΔΙΑΜΑΝΤΟΠΟΥΛΟΥ Πληροφορική-Ερευνητική Εργασία", "className": "Α1"}, {"teacher": "Μ.ΔΙΑΜΑΝΤΟΠΟΥΛΟΥ", "day": "Τρίτη", "time": "10:05", "lesson": "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ, Μ.ΔΙΑΜΑΝΤΟΠΟΥΛΟΥ Πληροφορική-Ερευνητική Εργασία", "className": "Α1"}, {"teacher": "Μ.ΔΙΑΜΑΝΤΟΠΟΥΛΟΥ", "day": "Τρίτη", "time": "11:45", "lesson": "Αρχές Μηχ.", "className": "Α2"}, {"teacher": "Μ.ΔΙΑΜΑΝΤΟΠΟΥΛΟΥ", "day": "Τρίτη", "time": "12:30", "lesson": "Στοιχεία Μηχανών", "className": "ΓΘ"}, {"teacher": "Μ.ΔΙΑΜΑΝΤΟΠΟΥΛΟΥ", "day": "Τετάρτη", "time": "08:30", "lesson": "Σχεδ. και Περ. Στοιχ. Μηχ.(Ε)", "className": "ΒΜ"}, {"teacher": "Μ.ΔΙΑΜΑΝΤΟΠΟΥΛΟΥ", "day": "Τετάρτη", "time": "09:15", "lesson": "Σχεδ. και Περ. Στοιχ. Μηχ.(Ε)", "className": "ΒΜ"}, {"teacher": "Μ.ΔΙΑΜΑΝΤΟΠΟΥΛΟΥ", "day": "Τετάρτη", "time": "10:05", "lesson": "Σχεδ. και Περ. Στοιχ. Μηχ.(Ε)", "className": "ΒΜ"}, {"teacher": "Μ.ΔΙΑΜΑΝΤΟΠΟΥΛΟΥ", "day": "Τετάρτη", "time": "11:45", "lesson": "Μηχ.Αντ. Υλ.", "className": "ΒΜ"}, {"teacher": "Μ.ΔΙΑΜΑΝΤΟΠΟΥΛΟΥ", "day": "Τετάρτη", "time": "12:30", "lesson": "Σ.Ε.Π.", "className": "Α1"}, {"teacher": "Μ.ΔΙΑΜΑΝΤΟΠΟΥΛΟΥ", "day": "Τετάρτη", "time": "13:15", "lesson": "Αρχές Μηχ.", "className": "Α2"}, {"teacher": "Μ.ΔΙΑΜΑΝΤΟΠΟΥΛΟΥ", "day": "Πέμπτη", "time": "10:55", "lesson": "Μηχ.Αντ. Υλ.", "className": "ΒΜ"}, {"teacher": "Μ.ΔΙΑΜΑΝΤΟΠΟΥΛΟΥ", "day": "Πέμπτη", "time": "11:45", "lesson": "Στοιχεία Μηχανών", "className": "ΓΘ"}, {"teacher": "Ε.ΑΜΠΑΤΖΗΣ", "day": "Δευτέρα", "time": "09:15", "lesson": "Εσωτ. Ηλ. Εγκ. (Θ)", "className": "ΒΗ"}, {"teacher": "Ε.ΑΜΠΑΤΖΗΣ", "day": "Δευτέρα", "time": "10:55", "lesson": "Ηλεκτροτεχνία 2", "className": "ΓΗ"}, {"teacher": "Ε.ΑΜΠΑΤΖΗΣ", "day": "Δευτέρα", "time": "12:30", "lesson": "Πληροφορική-Ερευνητική Εργασία", "className": "Α2"}, {"teacher": "Ε.ΑΜΠΑΤΖΗΣ", "day": "Δευτέρα", "time": "13:15", "lesson": "Πληροφορική-Ερευνητική Εργασία", "className": "Α2"}, {"teacher": "Ε.ΑΜΠΑΤΖΗΣ", "day": "Τρίτη", "time": "08:30", "lesson": "Εσωτ. Ηλ. Εγκ. (Ε)", "className": "ΒΗ"}, {"teacher": "Ε.ΑΜΠΑΤΖΗΣ", "day": "Τρίτη", "time": "09:15", "lesson": "Εσωτ. Ηλ. Εγκ. (Ε)", "className": "ΒΗ"}, {"teacher": "Ε.ΑΜΠΑΤΖΗΣ", "day": "Τρίτη", "time": "10:55", "lesson": "Ηλεκτροτεχνία (Θ)", "className": "ΒΗ"}, {"teacher": "Ε.ΑΜΠΑΤΖΗΣ", "day": "Τρίτη", "time": "11:45", "lesson": "Ηλεκτρ. Εγκ. 2 (Θ)", "className": "ΓΗ"}, {"teacher": "Ε.ΑΜΠΑΤΖΗΣ", "day": "Τρίτη", "time": "13:15", "lesson": "Εσωτ. Ηλ. Εγκ. (Θ)", "className": "ΒΗ"}, {"teacher": "Ε.ΑΜΠΑΤΖΗΣ", "day": "Τετάρτη", "time": "08:30", "lesson": "Ι.ΣΚΛΑ ΥΝΟΣ, Ε.ΑΜΠΑΤΖΗΣ Πληροφορική-Ερευνητική Εργασία", "className": "Α2, ΒΟ"}, {"teacher": "Ε.ΑΜΠΑΤΖΗΣ", "day": "Τετάρτη", "time": "09:15", "lesson": "Ι.ΣΚΛΑ ΥΝΟΣ, Ε.ΑΜΠΑΤΖΗΣ Πληροφορική-Ερευνητική Εργασία", "className": "Α2, ΒΟ"}, {"teacher": "Ε.ΑΜΠΑΤΖΗΣ", "day": "Τετάρτη", "time": "10:55", "lesson": "Ηλεκτρ. Εγκ. 2 (Θ)", "className": "ΓΗ"}, {"teacher": "Ε.ΑΜΠΑΤΖΗΣ", "day": "Τετάρτη", "time": "11:45", "lesson": "Ηλεκτροτεχνία 2", "className": "ΓΗ"}, {"teacher": "Ε.ΑΜΠΑΤΖΗΣ", "day": "Τετάρτη", "time": "12:30", "lesson": "Ηλεκτροτεχνία (Ε)", "className": "ΒΗ"}, {"teacher": "Ε.ΑΜΠΑΤΖΗΣ", "day": "Τετάρτη", "time": "13:15", "lesson": "Ηλεκτροτεχνία (Ε)", "className": "ΒΗ"}, {"teacher": "Ε.ΑΜΠΑΤΖΗΣ", "day": "Πέμπτη", "time": "08:30", "lesson": "Εσωτ. Ηλ. Εγκ. (Ε)", "className": "ΒΗ"}, {"teacher": "Ε.ΑΜΠΑΤΖΗΣ", "day": "Πέμπτη", "time": "09:15", "lesson": "Εσωτ. Ηλ. Εγκ. (Ε)", "className": "ΒΗ"}, {"teacher": "Ε.ΑΜΠΑΤΖΗΣ", "day": "Πέμπτη", "time": "10:05", "lesson": "Εσωτ. Ηλ. Εγκ. (Ε)", "className": "ΒΗ"}, {"teacher": "Ε.ΑΜΠΑΤΖΗΣ", "day": "Παρασκευή", "time": "10:55", "lesson": "Ηλεκτροτεχνία (Θ)", "className": "ΒΗ"}, {"teacher": "Ε.ΑΜΠΑΤΖΗΣ", "day": "Παρασκευή", "time": "11:45", "lesson": "Ηλεκτροτεχνία 2", "className": "ΓΗ"}, {"teacher": "Ε.ΑΜΠΑΤΖΗΣ", "day": "Παρασκευή", "time": "12:30", "lesson": "Ηλεκτρ. Εγκ. 2 (Θ)", "className": "ΓΗ"}, {"teacher": "Γ.ΒΕΝΙΖΕΛΟΣ", "day": "Δευτέρα", "time": "10:05", "lesson": "Αυτομ.-Αισθ. (Ε)", "className": "ΒΗ"}, {"teacher": "Γ.ΒΕΝΙΖΕΛΟΣ", "day": "Δευτέρα", "time": "10:55", "lesson": "Αυτομ.-Αισθ. (Ε)", "className": "ΒΗ"}, {"teacher": "Γ.ΒΕΝΙΖΕΛΟΣ", "day": "Δευτέρα", "time": "11:45", "lesson": "Ηλεκτρ. Εγκ. 2 (Ε)", "className": "ΓΗ"}, {"teacher": "Γ.ΒΕΝΙΖΕΛΟΣ", "day": "Δευτέρα", "time": "12:30", "lesson": "Ηλεκτρ. Εγκ. 2 (Ε)", "className": "ΓΗ"}, {"teacher": "Γ.ΒΕΝΙΖΕΛΟΣ", "day": "Τρίτη", "time": "08:30", "lesson": "Εσωτ. Ηλ. Εγκ. (Ε)", "className": "ΒΗ"}, {"teacher": "Γ.ΒΕΝΙΖΕΛΟΣ", "day": "Τρίτη", "time": "09:15", "lesson": "Εσωτ. Ηλ. Εγκ. (Ε)", "className": "ΒΗ"}, {"teacher": "Γ.ΒΕΝΙΖΕΛΟΣ", "day": "Τρίτη", "time": "10:55", "lesson": "Βασική Ηλεκτρολ. (Ε)", "className": "ΒΜ"}, {"teacher": "Γ.ΒΕΝΙΖΕΛΟΣ", "day": "Τρίτη", "time": "11:45", "lesson": "Βασική Ηλεκτρολ. (Ε)", "className": "ΒΜ"}, {"teacher": "Γ.ΒΕΝΙΖΕΛΟΣ", "day": "Τρίτη", "time": "12:30", "lesson": "Εργαστ. Ηλεκτρ. -Ηλ. Μηχ.(Ε)", "className": "ΓΗ"}, {"teacher": "Γ.ΒΕΝΙΖΕΛΟΣ", "day": "Τρίτη", "time": "13:15", "lesson": "Εργαστ. Ηλεκτρ. -Ηλ. Μηχ.(Ε)", "className": "ΓΗ"}, {"teacher": "Γ.ΒΕΝΙΖΕΛΟΣ", "day": "Τετάρτη", "time": "09:15", "lesson": "Αναλ. και Ψηφ. Ηλεκτρ. (Ε)", "className": "ΒΗ"}, {"teacher": "Γ.ΒΕΝΙΖΕΛΟΣ", "day": "Τετάρτη", "time": "10:05", "lesson": "Αναλ. και Ψηφ. Ηλεκτρ. (Ε)", "className": "ΒΗ"}, {"teacher": "Γ.ΒΕΝΙΖΕΛΟΣ", "day": "Τετάρτη", "time": "12:30", "lesson": "Ηλεκτροτεχνία (Ε)", "className": "ΒΗ"}, {"teacher": "Γ.ΒΕΝΙΖΕΛΟΣ", "day": "Τετάρτη", "time": "13:15", "lesson": "Ηλεκτροτεχνία (Ε)", "className": "ΒΗ"}, {"teacher": "Γ.ΒΕΝΙΖΕΛΟΣ", "day": "Πέμπτη", "time": "08:30", "lesson": "Εσωτ. Ηλ. Εγκ. (Ε)", "className": "ΒΗ"}, {"teacher": "Γ.ΒΕΝΙΖΕΛΟΣ", "day": "Πέμπτη", "time": "09:15", "lesson": "Εσωτ. Ηλ. Εγκ. (Ε)", "className": "ΒΗ"}, {"teacher": "Γ.ΒΕΝΙΖΕΛΟΣ", "day": "Πέμπτη", "time": "10:05", "lesson": "Εσωτ. Ηλ. Εγκ. (Ε)", "className": "ΒΗ"}, {"teacher": "Γ.ΒΕΝΙΖΕΛΟΣ", "day": "Πέμπτη", "time": "12:30", "lesson": "Ηλεκτρ. Εγκ. 2 (Ε)", "className": "ΓΗ"}, {"teacher": "Γ.ΒΕΝΙΖΕΛΟΣ", "day": "Πέμπτη", "time": "13:15", "lesson": "Ηλεκτρ. Εγκ. 2 (Ε)", "className": "ΓΗ"}, {"teacher": "Γ.ΒΕΝΙΖΕΛΟΣ", "day": "Παρασκευή", "time": "10:05", "lesson": "Εργαστ. Ηλεκτρ. -Ηλ. Μηχ.(Ε)", "className": "ΓΗ"}, {"teacher": "Γ.ΒΕΝΙΖΕΛΟΣ", "day": "Παρασκευή", "time": "10:55", "lesson": "Εργαστ. Ηλεκτρ. -Ηλ. Μηχ.(Ε)", "className": "ΓΗ"}, {"teacher": "Γ.ΒΕΝΙΖΕΛΟΣ", "day": "Παρασκευή", "time": "11:45", "lesson": "Αναλ. και Ψηφ. Ηλεκτρ. (Ε)", "className": "ΒΗ"}, {"teacher": "Γ.ΒΕΝΙΖΕΛΟΣ", "day": "Παρασκευή", "time": "12:30", "lesson": "Αναλ. και Ψηφ. Ηλεκτρ. (Ε)", "className": "ΒΗ"}, {"teacher": "Α.ΠΑΤΕΛΑΚΗ", "day": "Δευτέρα", "time": "10:05", "lesson": "Αυτομ.-Αισθ. (Ε)", "className": "ΒΗ"}, {"teacher": "Α.ΠΑΤΕΛΑΚΗ", "day": "Δευτέρα", "time": "10:55", "lesson": "Αυτομ.-Αισθ. (Ε)", "className": "ΒΗ"}, {"teacher": "Α.ΠΑΤΕΛΑΚΗ", "day": "Δευτέρα", "time": "12:30", "lesson": "Αναλ. και Ψηφ. Ηλεκτρ. (Θ)", "className": "ΒΗ"}, {"teacher": "Α.ΠΑΤΕΛΑΚΗ", "day": "Δευτέρα", "time": "13:15", "lesson": "Ηλεκτρ. Μηχ.", "className": "ΓΗ"}, {"teacher": "Α.ΠΑΤΕΛΑΚΗ", "day": "Τρίτη", "time": "08:30", "lesson": "Αυτομ.-Προγ. Λογ. (Θ)", "className": "ΓΗ"}, {"teacher": "Α.ΠΑΤΕΛΑΚΗ", "day": "Τρίτη", "time": "10:05", "lesson": "Αυτομ.-Προγ. Λογ. (Ε)", "className": "ΓΗ"}, {"teacher": "Α.ΠΑΤΕΛΑΚΗ", "day": "Τρίτη", "time": "10:55", "lesson": "Αυτομ.-Προγ. Λογ. (Ε)", "className": "ΓΗ"}, {"teacher": "Α.ΠΑΤΕΛΑΚΗ", "day": "Τετάρτη", "time": "08:30", "lesson": "Αναλ. και Ψηφ. Ηλεκτρ. (Θ)", "className": "ΒΗ"}, {"teacher": "Α.ΠΑΤΕΛΑΚΗ", "day": "Τετάρτη", "time": "09:15", "lesson": "Αναλ. και Ψηφ. Ηλεκτρ. (Ε)", "className": "ΒΗ"}, {"teacher": "Α.ΠΑΤΕΛΑΚΗ", "day": "Τετάρτη", "time": "10:05", "lesson": "Αναλ. και Ψηφ. Ηλεκτρ. (Ε)", "className": "ΒΗ"}, {"teacher": "Α.ΠΑΤΕΛΑΚΗ", "day": "Τετάρτη", "time": "10:55", "lesson": "Αρχές Ηλεκτρ.", "className": "Α2"}, {"teacher": "Α.ΠΑΤΕΛΑΚΗ", "day": "Τετάρτη", "time": "12:30", "lesson": "Βασική Ηλεκτρολ.(Θ)", "className": "ΒΜ"}, {"teacher": "Α.ΠΑΤΕΛΑΚΗ", "day": "Τετάρτη", "time": "13:15", "lesson": "Αρχές Ηλεκτρ.", "className": "Α1"}, {"teacher": "Α.ΠΑΤΕΛΑΚΗ", "day": "Πέμπτη", "time": "08:30", "lesson": "Αυτομ.-Προγ. Λογ. (Ε)", "className": "ΓΗ"}, {"teacher": "Α.ΠΑΤΕΛΑΚΗ", "day": "Πέμπτη", "time": "09:15", "lesson": "Αυτομ.-Προγ. Λογ. (Ε)", "className": "ΓΗ"}, {"teacher": "Α.ΠΑΤΕΛΑΚΗ", "day": "Πέμπτη", "time": "10:05", "lesson": "Αυτομ.-Προγ. Λογ. (Ε)", "className": "ΓΗ"}, {"teacher": "Α.ΠΑΤΕΛΑΚΗ", "day": "Πέμπτη", "time": "11:45", "lesson": "Ηλεκτρ. Μηχ.", "className": "ΓΗ"}, {"teacher": "Α.ΠΑΤΕΛΑΚΗ", "day": "Παρασκευή", "time": "08:30", "lesson": "Βασική Ηλεκτρολ.(Θ)", "className": "ΒΜ"}, {"teacher": "Α.ΠΑΤΕΛΑΚΗ", "day": "Παρασκευή", "time": "09:15", "lesson": "Ηλεκτρ. Μηχ.", "className": "ΓΗ"}, {"teacher": "Α.ΠΑΤΕΛΑΚΗ", "day": "Παρασκευή", "time": "10:05", "lesson": "Αρχές Ηλεκτρ.", "className": "Α2"}, {"teacher": "Α.ΠΑΤΕΛΑΚΗ", "day": "Παρασκευή", "time": "11:45", "lesson": "Αναλ. και Ψηφ. Ηλεκτρ. (Ε)", "className": "ΒΗ"}, {"teacher": "Α.ΠΑΤΕΛΑΚΗ", "day": "Παρασκευή", "time": "12:30", "lesson": "Αναλ. και Ψηφ. Ηλεκτρ. (Ε)", "className": "ΒΗ"}, {"teacher": "Α.ΠΑΤΕΛΑΚΗ", "day": "Παρασκευή", "time": "13:15", "lesson": "Αρχές Ηλεκτρ.", "className": "Α1"}, {"teacher": "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ", "day": "Δευτέρα", "time": "10:55", "lesson": "Πληρ.Συστ.", "className": "ΓΠ"}, {"teacher": "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ", "day": "Δευτέρα", "time": "11:45", "lesson": "Πληροφορική-Ερευνητική Εργασία", "className": "Α1"}, {"teacher": "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ", "day": "Δευτέρα", "time": "12:30", "lesson": "Πληροφορική-Ερευνητική Εργασία", "className": "Α1"}, {"teacher": "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ", "day": "Τρίτη", "time": "09:15", "lesson": "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ, Μ.ΔΙΑΜΑΝΤΟΠΟΥΛΟΥ Πληροφορική-Ερευνητική Εργασία", "className": "Α1"}, {"teacher": "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ", "day": "Τρίτη", "time": "10:05", "lesson": "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ, Μ.ΔΙΑΜΑΝΤΟΠΟΥΛΟΥ Πληροφορική-Ερευνητική Εργασία", "className": "Α1"}, {"teacher": "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ", "day": "Τρίτη", "time": "11:45", "lesson": "Προγρ.Υπολογ.(Ε)", "className": "ΓΠ"}, {"teacher": "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ", "day": "Τρίτη", "time": "12:30", "lesson": "Προγρ.Υπολογ.(Ε)", "className": "ΓΠ"}, {"teacher": "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ", "day": "Τρίτη", "time": "13:15", "lesson": "Προγρ.Υπολογ.(Ε)", "className": "ΓΠ"}, {"teacher": "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ", "day": "Τετάρτη", "time": "11:45", "lesson": "Προγρ.Υπολογ(Θ)", "className": "ΓΠ"}, {"teacher": "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ", "day": "Τετάρτη", "time": "13:15", "lesson": "Αρχ. Προγραμ. Υπολ. (Θ)", "className": "ΒΠ"}, {"teacher": "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ", "day": "Πέμπτη", "time": "08:30", "lesson": "Αρχ. Προγραμ. Υπολ. (Ε)", "className": "ΒΠ"}, {"teacher": "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ", "day": "Πέμπτη", "time": "09:15", "lesson": "Αρχ. Προγραμ. Υπολ. (Ε)", "className": "ΒΠ"}, {"teacher": "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ", "day": "Πέμπτη", "time": "10:05", "lesson": "Αρχ. Προγραμ. Υπολ. (Ε)", "className": "ΒΠ"}, {"teacher": "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ", "day": "Πέμπτη", "time": "11:45", "lesson": "Προγρ.Υπολογ(Θ)", "className": "ΓΠ"}, {"teacher": "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ", "day": "Πέμπτη", "time": "12:30", "lesson": "Συντήρ.Υπολ.Συστ.", "className": "ΓΠ"}, {"teacher": "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ", "day": "Πέμπτη", "time": "13:15", "lesson": "Συντήρ.Υπολ.Συστ.", "className": "ΓΠ"}, {"teacher": "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ", "day": "Παρασκευή", "time": "09:15", "lesson": "Προγρ.Υπολογ(Θ)", "className": "ΓΠ"}, {"teacher": "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ", "day": "Παρασκευή", "time": "10:05", "lesson": "Συντήρ.Υπολ.Συστ.", "className": "ΓΠ"}, {"teacher": "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ", "day": "Παρασκευή", "time": "10:55", "lesson": "Συντήρ.Υπολ.Συστ.", "className": "ΓΠ"}, {"teacher": "Ι.ΣΚΛΑΒΟΥΝΟΣ", "day": "Δευτέρα", "time": "08:30", "lesson": "Υλικ. και Δικτ. Υπολ. (Ε)", "className": "ΒΠ"}, {"teacher": "Ι.ΣΚΛΑΒΟΥΝΟΣ", "day": "Δευτέρα", "time": "09:15", "lesson": "Υλικ. και Δικτ. Υπολ. (Ε)", "className": "ΒΠ"}, {"teacher": "Ι.ΣΚΛΑΒΟΥΝΟΣ", "day": "Δευτέρα", "time": "10:05", "lesson": "Λειτ. Συστ. Ασφ.Πληροφ.Συστ.(Ε)", "className": "ΒΠ"}, {"teacher": "Ι.ΣΚΛΑΒΟΥΝΟΣ", "day": "Δευτέρα", "time": "10:55", "lesson": "Λειτ. Συστ. Ασφ.Πληροφ.Συστ.(Ε)", "className": "ΒΠ"}, {"teacher": "Ι.ΣΚΛΑΒΟΥΝΟΣ", "day": "Δευτέρα", "time": "12:30", "lesson": "Πληροφορική-Ερευνητική Εργασία", "className": "Α2"}, {"teacher": "Ι.ΣΚΛΑΒΟΥΝΟΣ", "day": "Δευτέρα", "time": "13:15", "lesson": "Πληροφορική-Ερευνητική Εργασία", "className": "Α2"}, {"teacher": "Ι.ΣΚΛΑΒΟΥΝΟΣ", "day": "Τρίτη", "time": "08:30", "lesson": "Δίκτυα Υπολ.(Θ)", "className": "ΓΠ"}, {"teacher": "Ι.ΣΚΛΑΒΟΥΝΟΣ", "day": "Τρίτη", "time": "09:15", "lesson": "Τεχνικά Θέματα Πωλ.Προδ.Υλικ. &Λογ.(Θ)", "className": "ΒΠ"}, {"teacher": "Ι.ΣΚΛΑΒΟΥΝΟΣ", "day": "Τρίτη", "time": "10:05", "lesson": "Ειδ.Θέμ. Υλ.& Δίκτ.Υπολ", "className": "ΓΠ"}, {"teacher": "Ι.ΣΚΛΑΒΟΥΝΟΣ", "day": "Τρίτη", "time": "10:55", "lesson": "Ειδ.Θέμ. Υλ.& Δίκτ.Υπολ", "className": "ΓΠ"}, {"teacher": "Ι.ΣΚΛΑΒΟΥΝΟΣ", "day": "Τετάρτη", "time": "08:30", "lesson": "Ι.ΣΚΛΑ ΥΝΟΣ, Ε.ΑΜΠΑΤΖΗΣ Πληροφορική-Ερευνητική Εργασία", "className": "Α2, ΒΟ"}, {"teacher": "Ι.ΣΚΛΑΒΟΥΝΟΣ", "day": "Τετάρτη", "time": "09:15", "lesson": "Ι.ΣΚΛΑ ΥΝΟΣ, Ε.ΑΜΠΑΤΖΗΣ Πληροφορική-Ερευνητική Εργασία", "className": "Α2, ΒΟ"}, {"teacher": "Ι.ΣΚΛΑΒΟΥΝΟΣ", "day": "Τετάρτη", "time": "10:55", "lesson": "Δίκτυα Υπολ.(Θ)", "className": "ΓΠ"}, {"teacher": "Ι.ΣΚΛΑΒΟΥΝΟΣ", "day": "Τετάρτη", "time": "11:45", "lesson": "Υλικ. και Δίκτ. Υπολ.(Θ)", "className": "ΒΠ"}, {"teacher": "Ι.ΣΚΛΑΒΟΥΝΟΣ", "day": "Πέμπτη", "time": "08:30", "lesson": "Ειδ.Θέμ. Υλ.& Δίκτ.Υπολ", "className": "ΓΠ"}, {"teacher": "Ι.ΣΚΛΑΒΟΥΝΟΣ", "day": "Πέμπτη", "time": "09:15", "lesson": "Ειδ.Θέμ. Υλ.& Δίκτ.Υπολ", "className": "ΓΠ"}, {"teacher": "Ι.ΣΚΛΑΒΟΥΝΟΣ", "day": "Πέμπτη", "time": "10:05", "lesson": "Δίκτυα Υπολ.(Θ)", "className": "ΓΠ"}, {"teacher": "Ι.ΣΚΛΑΒΟΥΝΟΣ", "day": "Πέμπτη", "time": "10:55", "lesson": "Λειτ.συστ.(Θ)", "className": "ΒΠ"}, {"teacher": "Ι.ΣΚΛΑΒΟΥΝΟΣ", "day": "Παρασκευή", "time": "08:30", "lesson": "Υλικ. και Δίκτ. Υπολ.(Θ)", "className": "ΒΠ"}, {"teacher": "Ι.ΣΚΛΑΒΟΥΝΟΣ", "day": "Παρασκευή", "time": "09:15", "lesson": "Τεχνικά Θέματα Πωλ.Προδ.Υλικ. ,Λογ.(Ε)", "className": "ΒΠ"}, {"teacher": "Ι.ΣΚΛΑΒΟΥΝΟΣ", "day": "Παρασκευή", "time": "10:05", "lesson": "Τεχνικά Θέματα Πωλ.Προδ.Υλικ. ,Λογ.(Ε)", "className": "ΒΠ"}, {"teacher": "Ι.ΣΚΛΑΒΟΥΝΟΣ", "day": "Παρασκευή", "time": "11:45", "lesson": "Δίκτυα Υπολογ.(Ε)", "className": "ΓΠ"}, {"teacher": "Ι.ΣΚΛΑΒΟΥΝΟΣ", "day": "Παρασκευή", "time": "12:30", "lesson": "Δίκτυα Υπολογ.(Ε)", "className": "ΓΠ"}, {"teacher": "Δ.ΦΩΤΑΚΟΠΟΥΛΟΥ", "day": "Τετάρτη", "time": "10:05", "lesson": "Σχεδ. Ανάπ. Ιστ.(Ε)", "className": "ΒΠ"}, {"teacher": "Δ.ΦΩΤΑΚΟΠΟΥΛΟΥ", "day": "Τετάρτη", "time": "10:55", "lesson": "Σχεδ. Ανάπ. Ιστ.(Ε)", "className": "ΒΠ"}, {"teacher": "Δ.ΦΩΤΑΚΟΠΟΥΛΟΥ", "day": "Τετάρτη", "time": "12:30", "lesson": "Βασ. Θέμ. Πληρ. (Θ)", "className": "ΒΠ"}, {"teacher": "Δ.ΦΩΤΑΚΟΠΟΥΛΟΥ", "day": "Παρασκευή", "time": "08:30", "lesson": "Εισ. στα Υπολ. Συστ. (Ε)", "className": "ΒΗ"}, {"teacher": "Δ.ΦΩΤΑΚΟΠΟΥΛΟΥ", "day": "Παρασκευή", "time": "09:15", "lesson": "Εισ. στα Υπολ. Συστ. (Ε)", "className": "ΒΗ"}, {"teacher": "Δ.ΦΩΤΑΚΟΠΟΥΛΟΥ", "day": "Παρασκευή", "time": "10:05", "lesson": "Εισ. στα Υπολ. Συστ. (Ε)", "className": "ΒΗ"}, {"teacher": "Δ.ΦΩΤΑΚΟΠΟΥΛΟΥ", "day": "Παρασκευή", "time": "10:55", "lesson": "Βασ. Θέμ. Πληρ. (Θ)", "className": "ΒΠ"}, {"teacher": "Δ.ΦΩΤΑΚΟΠΟΥΛΟΥ", "day": "Παρασκευή", "time": "12:30", "lesson": "Σχεδ. Ανάπ. Ιστ.(Ε)", "className": "ΒΠ"}, {"teacher": "Δ.ΦΩΤΑΚΟΠΟΥΛΟΥ", "day": "Παρασκευή", "time": "13:15", "lesson": "Σχεδ. Ανάπ. Ιστ.(Ε)", "className": "ΒΠ"}, {"teacher": "Κ.ΜΠΟΥΣΜΠΟΥΡΑΣ", "day": "Δευτέρα", "time": "08:30", "lesson": "Στοιχεία Παθολογίας", "className": "ΓΥ"}, {"teacher": "Κ.ΜΠΟΥΣΜΠΟΥΡΑΣ", "day": "Δευτέρα", "time": "09:15", "lesson": "Χειρ.-Τεχν. Χειρ. (Ε)", "className": "ΓΥ"}, {"teacher": "Κ.ΜΠΟΥΣΜΠΟΥΡΑΣ", "day": "Δευτέρα", "time": "10:05", "lesson": "Ανατομία-Φυσιολογία Ι", "className": "ΒΥ"}, {"teacher": "Κ.ΜΠΟΥΣΜΠΟΥΡΑΣ", "day": "Δευτέρα", "time": "10:55", "lesson": "Εργ. Περιβ. Τομ.(Ε)", "className": "ΒΥ"}, {"teacher": "Κ.ΜΠΟΥΣΜΠΟΥΡΑΣ", "day": "Τρίτη", "time": "10:55", "lesson": "Υγεία και Διατρ.", "className": "ΒΥ"}, {"teacher": "Κ.ΜΠΟΥΣΜΠΟΥΡΑΣ", "day": "Τρίτη", "time": "11:45", "lesson": "Ανατομία-Φυσιολογία Ι", "className": "ΒΥ"}, {"teacher": "Κ.ΜΠΟΥΣΜΠΟΥΡΑΣ", "day": "Τρίτη", "time": "13:15", "lesson": "Υγιεινή", "className": "ΓΥ"}, {"teacher": "Κ.ΜΠΟΥΣΜΠΟΥΡΑΣ", "day": "Τετάρτη", "time": "08:30", "lesson": "Ανατομία-Φυσιολογία ΙΙ", "className": "ΓΥ"}, {"teacher": "Κ.ΜΠΟΥΣΜΠΟΥΡΑΣ", "day": "Τετάρτη", "time": "09:15", "lesson": "Ανατομία-Φυσιολογία Ι", "className": "ΒΥ"}, {"teacher": "Κ.ΜΠΟΥΣΜΠΟΥΡΑΣ", "day": "Τετάρτη", "time": "10:05", "lesson": "Εργ. Περιβ. Τομ.(Ε)", "className": "ΒΥ"}, {"teacher": "Κ.ΜΠΟΥΣΜΠΟΥΡΑΣ", "day": "Τετάρτη", "time": "10:55", "lesson": "Εργ. Περιβ. Τομ.(Ε)", "className": "ΒΥ"}, {"teacher": "Κ.ΜΠΟΥΣΜΠΟΥΡΑΣ", "day": "Πέμπτη", "time": "10:55", "lesson": "Στοιχεία Παθολογίας", "className": "ΓΥ"}, {"teacher": "Κ.ΜΠΟΥΣΜΠΟΥΡΑΣ", "day": "Πέμπτη", "time": "12:30", "lesson": "Ανατομία-Φυσιολογία ΙΙ", "className": "ΓΥ"}, {"teacher": "Κ.ΜΠΟΥΣΜΠΟΥΡΑΣ", "day": "Πέμπτη", "time": "13:15", "lesson": "Υγιεινή", "className": "ΓΥ"}, {"teacher": "Κ.ΜΠΟΥΣΜΠΟΥΡΑΣ", "day": "Παρασκευή", "time": "10:05", "lesson": "Ανατομία-Φυσιολογία ΙΙ", "className": "ΓΥ"}, {"teacher": "Κ.ΜΠΟΥΣΜΠΟΥΡΑΣ", "day": "Παρασκευή", "time": "12:30", "lesson": "Ανατομία-Φυσιολογία Ι", "className": "ΒΥ"}, {"teacher": "Κ.ΜΠΟΥΣΜΠΟΥΡΑΣ", "day": "Παρασκευή", "time": "13:15", "lesson": "Υγεία και Διατρ.", "className": "ΒΥ"}, {"teacher": "Χ.ΚΟΥΡΛΟΥ", "day": "Δευτέρα", "time": "08:30", "lesson": "Νοσηλ. Ι (Θ)", "className": "ΒΥ"}, {"teacher": "Χ.ΚΟΥΡΛΟΥ", "day": "Δευτέρα", "time": "09:15", "lesson": "ΓΥ", "className": ""}, {"teacher": "Χ.ΚΟΥΡΛΟΥ", "day": "Δευτέρα", "time": "11:45", "lesson": "Νοσηλ. ΙΙ (Ε)", "className": "ΓΥ"}, {"teacher": "Χ.ΚΟΥΡΛΟΥ", "day": "Δευτέρα", "time": "12:30", "lesson": "Νοσηλ. ΙΙ (Ε)", "className": "ΓΥ"}, {"teacher": "Χ.ΚΟΥΡΛΟΥ", "day": "Τρίτη", "time": "08:30", "lesson": "Νοσηλ. ΙΙ (Ε)", "className": "ΓΥ"}, {"teacher": "Χ.ΚΟΥΡΛΟΥ", "day": "Τρίτη", "time": "09:15", "lesson": "Νοσηλ. ΙΙ (Ε)", "className": "ΓΥ"}, {"teacher": "Χ.ΚΟΥΡΛΟΥ", "day": "Τρίτη", "time": "10:05", "lesson": "Νοσηλ. ΙΙ (Ε)", "className": "ΓΥ"}, {"teacher": "Χ.ΚΟΥΡΛΟΥ", "day": "Τετάρτη", "time": "08:30", "lesson": "Νοσηλ. Ι (Θ)", "className": "ΒΥ"}, {"teacher": "Χ.ΚΟΥΡΛΟΥ", "day": "Τετάρτη", "time": "09:15", "lesson": "Νοσηλ. ΙΙ (Ε)", "className": "ΓΥ"}, {"teacher": "Χ.ΚΟΥΡΛΟΥ", "day": "Τετάρτη", "time": "10:05", "lesson": "Νοσηλ. ΙΙ (Ε)", "className": "ΓΥ"}, {"teacher": "Χ.ΚΟΥΡΛΟΥ", "day": "Τετάρτη", "time": "11:45", "lesson": "Νοσηλ. Ι (Ε)", "className": "ΒΥ"}, {"teacher": "Χ.ΚΟΥΡΛΟΥ", "day": "Τετάρτη", "time": "12:30", "lesson": "Νοσηλ. Ι (Ε)", "className": "ΒΥ"}, {"teacher": "Χ.ΚΟΥΡΛΟΥ", "day": "Πέμπτη", "time": "08:30", "lesson": "Διαπρ. Σχ.", "className": "ΒΥ"}, {"teacher": "Χ.ΚΟΥΡΛΟΥ", "day": "Πέμπτη", "time": "09:15", "lesson": "Νοσηλ. Ι (Ε)", "className": "ΒΥ"}, {"teacher": "Χ.ΚΟΥΡΛΟΥ", "day": "Πέμπτη", "time": "10:05", "lesson": "Νοσηλ. Ι (Ε)", "className": "ΒΥ"}, {"teacher": "Χ.ΚΟΥΡΛΟΥ", "day": "Πέμπτη", "time": "10:55", "lesson": "Νοσηλ. Ι (Ε)", "className": "ΒΥ"}, {"teacher": "Χ.ΚΟΥΡΛΟΥ", "day": "Παρασκευή", "time": "10:55", "lesson": "Διαπρ. Σχ.", "className": "ΒΥ"}, {"teacher": "Χ.ΚΟΥΡΛΟΥ", "day": "Παρασκευή", "time": "11:45", "lesson": "Νοσηλ. ΙΙ (Ε)", "className": "ΓΥ"}, {"teacher": "Α.Μ. ΛΥΚΟΓΙΑΝΝΗ", "day": "Τρίτη", "time": "08:30", "lesson": "Άλγεβρα", "className": "ΒΜ, ΒΠ, ΒΥ"}, {"teacher": "Α.Μ. ΛΥΚΟΓΙΑΝΝΗ", "day": "Τρίτη", "time": "10:05", "lesson": "Άλγεβρα", "className": "ΒΟ, ΒΗ"}, {"teacher": "Α.Μ. ΛΥΚΟΓΙΑΝΝΗ", "day": "Πέμπτη", "time": "10:55", "lesson": "Άλγεβρα", "className": "ΒΟ, ΒΗ"}, {"teacher": "Α.Μ. ΛΥΚΟΓΙΑΝΝΗ", "day": "Πέμπτη", "time": "11:45", "lesson": "Άλγεβρα", "className": "ΒΜ, ΒΠ, ΒΥ"}, {"teacher": "Κ.ΒΟΛΥΡΑΚΗ", "day": "Πέμπτη", "time": "12:30", "lesson": "Γεωμετρία", "className": "ΒΜ, ΒΠ, ΒΥ"}, {"teacher": "Κ.ΒΟΛΥΡΑΚΗ", "day": "Πέμπτη", "time": "13:15", "lesson": "Γεωμετρία", "className": "ΒΟ, ΒΗ"}, {"teacher": "Χ.Μ. ΛΑΓΟΓΙΑΝΝΗ", "day": "Δευτέρα", "time": "11:45", "lesson": "Πολιτική Παιδεία", "className": "Α2"}, {"teacher": "Χ.Μ. ΛΑΓΟΓΙΑΝΝΗ", "day": "Δευτέρα", "time": "13:15", "lesson": "Νέα Ελλην.", "className": "ΒΟ, ΒΗ"}, {"teacher": "Χ.Μ. ΛΑΓΟΓΙΑΝΝΗ", "day": "Τρίτη", "time": "11:45", "lesson": "Νέα Ελλην.", "className": "ΒΟ, ΒΗ"}, {"teacher": "Χ.Μ. ΛΑΓΟΓΙΑΝΝΗ", "day": "Τρίτη", "time": "12:30", "lesson": "Νέα Ελλην.", "className": "ΒΟ, ΒΗ"}, {"teacher": "Χ.Μ. ΛΑΓΟΓΙΑΝΝΗ", "day": "Τρίτη", "time": "13:15", "lesson": "Πολιτική Παιδεία", "className": "Α2"}, {"teacher": "Κ.ΡΟΥΚΗΣ", "day": "Δευτέρα", "time": "08:30", "lesson": "Εισ. στις Αρχ. της Επστ. Η/Υ", "className": "ΓΘ, ΓΟ"}, {"teacher": "Κ.ΡΟΥΚΗΣ", "day": "Δευτέρα", "time": "09:15", "lesson": "Εισ. στις Αρχ. της Επστ. Η/Υ", "className": "ΓΗ, ΓΠ"}, {"teacher": "Κ.ΡΟΥΚΗΣ", "day": "Δευτέρα", "time": "11:45", "lesson": "Τεχν.Υποστ.Υπολ.Συστ.", "className": "ΓΠ"}, {"teacher": "Κ.ΡΟΥΚΗΣ", "day": "Δευτέρα", "time": "12:30", "lesson": "Τεχν.Υποστ.Υπολ.Συστ.", "className": "ΓΠ"}, {"teacher": "Κ.ΡΟΥΚΗΣ", "day": "Δευτέρα", "time": "13:15", "lesson": "Τεχν.Υποστ.Υπολ.Συστ.", "className": "ΓΠ"}, {"teacher": "Κ.ΡΟΥΚΗΣ", "day": "Τετάρτη", "time": "08:30", "lesson": "Βασ. Θέμ. Πληρ. (Ε)", "className": "ΒΠ"}, {"teacher": "Κ.ΡΟΥΚΗΣ", "day": "Τετάρτη", "time": "09:15", "lesson": "Βασ. Θέμ. Πληρ. (Ε)", "className": "ΒΠ"}, {"teacher": "Κ.ΡΟΥΚΗΣ", "day": "Τετάρτη", "time": "11:45", "lesson": "Εισ. στις Αρχ. της Επστ. Η/Υ", "className": "ΓΥ"}, {"teacher": "Κ.ΡΟΥΚΗΣ", "day": "Παρασκευή", "time": "08:30", "lesson": "Εισ. στα Υπολ. Συστ. (Ε)", "className": "ΒΗ"}, {"teacher": "Κ.ΡΟΥΚΗΣ", "day": "Παρασκευή", "time": "09:15", "lesson": "Εισ. στα Υπολ. Συστ. (Ε)", "className": "ΒΗ"}, {"teacher": "Κ.ΡΟΥΚΗΣ", "day": "Παρασκευή", "time": "10:05", "lesson": "Εισ. στα Υπολ. Συστ. (Ε)", "className": "ΒΗ"}, {"teacher": "Κ.ΡΟΥΚΗΣ", "day": "Παρασκευή", "time": "11:45", "lesson": "Εισ. στις Αρχ. της Επστ. Η/Υ", "className": "ΒΜ, ΒΠ, ΒΥ"}, {"teacher": "Κ.ΡΟΥΚΗΣ", "day": "Παρασκευή", "time": "13:15", "lesson": "Εισ. στις Αρχ. της Επστ. Η/Υ", "className": "ΒΟ, ΒΗ"}, {"teacher": "Α.ΓΚΕΓΚΑ", "day": "Δευτέρα", "time": "10:55", "lesson": "Εργ. Περιβ. Τομ.(Ε)", "className": "ΒΥ"}, {"teacher": "Α.ΓΚΕΓΚΑ", "day": "Δευτέρα", "time": "11:45", "lesson": "Νοσηλ. ΙΙ (Ε)", "className": "ΓΥ"}, {"teacher": "Α.ΓΚΕΓΚΑ", "day": "Δευτέρα", "time": "12:30", "lesson": "Νοσηλ. ΙΙ (Ε)", "className": "ΓΥ"}, {"teacher": "Α.ΓΚΕΓΚΑ", "day": "Δευτέρα", "time": "13:15", "lesson": "Νοσηλ. ΙΙ (Θ)", "className": "ΓΥ"}, {"teacher": "Α.ΓΚΕΓΚΑ", "day": "Τρίτη", "time": "08:30", "lesson": "Νοσηλ. ΙΙ (Ε)", "className": "ΓΥ"}, {"teacher": "Α.ΓΚΕΓΚΑ", "day": "Τρίτη", "time": "09:15", "lesson": "Νοσηλ. ΙΙ (Ε)", "className": "ΓΥ"}, {"teacher": "Α.ΓΚΕΓΚΑ", "day": "Τρίτη", "time": "10:05", "lesson": "Νοσηλ. ΙΙ (Ε)", "className": "ΓΥ"}, {"teacher": "Α.ΓΚΕΓΚΑ", "day": "Τρίτη", "time": "11:45", "lesson": "Στοιχ. Μαιευτ.-Γυν.", "className": "ΓΥ"}, {"teacher": "Α.ΓΚΕΓΚΑ", "day": "Τετάρτη", "time": "09:15", "lesson": "Νοσηλ. ΙΙ (Ε)", "className": "ΓΥ"}, {"teacher": "Α.ΓΚΕΓΚΑ", "day": "Τετάρτη", "time": "10:05", "lesson": "Νοσηλ. ΙΙ (Ε)", "className": "ΓΥ"}, {"teacher": "Α.ΓΚΕΓΚΑ", "day": "Τετάρτη", "time": "11:45", "lesson": "Νοσηλ. Ι (Ε)", "className": "ΒΥ"}, {"teacher": "Α.ΓΚΕΓΚΑ", "day": "Τετάρτη", "time": "12:30", "lesson": "Νοσηλ. Ι (Ε)", "className": "ΒΥ"}, {"teacher": "Α.ΓΚΕΓΚΑ", "day": "Τετάρτη", "time": "13:15", "lesson": "Νοσηλ. ΙΙ (Θ)", "className": "ΓΥ"}, {"teacher": "Α.ΓΚΕΓΚΑ", "day": "Πέμπτη", "time": "08:30", "lesson": "Στοιχ. Μαιευτ.-Γυν.", "className": "ΓΥ"}, {"teacher": "Α.ΓΚΕΓΚΑ", "day": "Πέμπτη", "time": "09:15", "lesson": "Νοσηλ. Ι (Ε)", "className": "ΒΥ"}, {"teacher": "Α.ΓΚΕΓΚΑ", "day": "Πέμπτη", "time": "10:05", "lesson": "Νοσηλ. Ι (Ε)", "className": "ΒΥ"}, {"teacher": "Α.ΓΚΕΓΚΑ", "day": "Πέμπτη", "time": "10:55", "lesson": "Νοσηλ. Ι (Ε)", "className": "ΒΥ"}, {"teacher": "Α.ΓΚΕΓΚΑ", "day": "Παρασκευή", "time": "08:30", "lesson": "Πρώτες Βοήθειες (Ε)", "className": "ΒΥ"}, {"teacher": "Α.ΓΚΕΓΚΑ", "day": "Παρασκευή", "time": "09:15", "lesson": "Πρώτες Βοήθειες (Ε)", "className": "ΒΥ"}, {"teacher": "Α.ΓΚΕΓΚΑ", "day": "Παρασκευή", "time": "10:05", "lesson": "Πρώτες Βοήθειες (Ε)", "className": "ΒΥ"}, {"teacher": "Α.ΓΚΕΓΚΑ", "day": "Παρασκευή", "time": "11:45", "lesson": "Νοσηλ. ΙΙ (Ε)", "className": "ΓΥ"}, {"teacher": "Α.ΓΚΕΓΚΑ", "day": "Παρασκευή", "time": "12:30", "lesson": "Νοσηλ. ΙΙ (Ε)", "className": "ΓΥ"}, {"teacher": "Α.ΓΚΕΓΚΑ", "day": "Παρασκευή", "time": "13:15", "lesson": "Νοσηλ. ΙΙ (Ε)", "className": "ΓΥ"}, {"teacher": "Κ. ΠΑΠΟΥΤΣΗ", "day": "Δευτέρα", "time": "08:30", "lesson": "Άλγεβρα", "className": "Α2"}, {"teacher": "Κ. ΠΑΠΟΥΤΣΗ", "day": "Δευτέρα", "time": "09:15", "lesson": "Άλγεβρα", "className": "Α1"}, {"teacher": "Κ. ΠΑΠΟΥΤΣΗ", "day": "Δευτέρα", "time": "10:05", "lesson": "Άλγεβρα", "className": "Α1"}, {"teacher": "Κ. ΠΑΠΟΥΤΣΗ", "day": "Παρασκευή", "time": "10:05", "lesson": "Άλγεβρα", "className": "Α1"}, {"teacher": "Κ. ΠΑΠΟΥΤΣΗ", "day": "Παρασκευή", "time": "11:45", "lesson": "Γεωμετρία", "className": "Α1"}, {"teacher": "Κ. ΠΑΠΟΥΤΣΗ", "day": "Παρασκευή", "time": "12:30", "lesson": "Γεωμετρία", "className": "Α2"}, {"teacher": "Κ. ΠΑΠΟΥΤΣΗ", "day": "Παρασκευή", "time": "13:15", "lesson": "Άλγεβρα", "className": "Α2"}, {"teacher": "Χ. ΚΟΤΟΥΛΑΣ", "day": "Τρίτη", "time": "09:15", "lesson": "Νέα Ελλην.", "className": "Α2"}, {"teacher": "Χ. ΚΟΤΟΥΛΑΣ", "day": "Τρίτη", "time": "10:05", "lesson": "Νέα Ελλην.", "className": "Α2"}, {"teacher": "Χ. ΚΟΤΟΥΛΑΣ", "day": "Τρίτη", "time": "11:45", "lesson": "Νέα Ελλην.", "className": "Α1"}, {"teacher": "Χ. ΚΟΤΟΥΛΑΣ", "day": "Τρίτη", "time": "12:30", "lesson": "Νέα Ελλην.", "className": "Α1"}, {"teacher": "Χ. ΚΟΤΟΥΛΑΣ", "day": "Πέμπτη", "time": "08:30", "lesson": "Νέα Ελλην.", "className": "Α2"}, {"teacher": "Χ. ΚΟΤΟΥΛΑΣ", "day": "Πέμπτη", "time": "09:15", "lesson": "Νέα Ελλην.", "className": "Α2"}, {"teacher": "Χ. ΚΟΤΟΥΛΑΣ", "day": "Πέμπτη", "time": "10:05", "lesson": "Νέα Ελλην.", "className": "Α1"}];
+        const teachers = ["Α.ΑΡΟΥΚΑΤΟΥ", "Α.ΓΚΕΓΚΑ", "Α.ΚΩΤΣΟΠΟΥΛΟΥ", "Α.Μ. ΛΥΚΟΓΙΑΝΝΗ", "Α.ΠΑΠΑΓΕΩΡΓΙΟΥ", "Α.ΠΑΤΕΛΑΚΗ", "Γ.ΒΕΝΙΖΕΛΟΣ", "Γ.ΦΡΑΓΚΟΥ", "Δ.ΟΥΣΤΑΣ", "Δ.ΦΩΤΑΚΟΠΟΥΛΟΥ", "Ε.ΑΜΠΑΤΖΗΣ", "Ι. ΘΕΟΧΑΡΗΣ", "Ι.ΣΚΛΑΒΟΥΝΟΣ", "Κ. ΠΑΠΟΥΤΣΗ", "Κ.ΒΟΛΥΡΑΚΗ", "Κ.ΜΠΟΥΣΜΠΟΥΡΑΣ", "Κ.ΡΟΥΚΗΣ", "Μ.-Α. ΓΑΡΑΝΤΖΙΩΤΗ", "Μ.ΒΑΣΙΛΑΡΑ", "Μ.ΔΙΑΜΑΝΤΟΠΟΥΛΟΥ", "Μ.ΠΟΛΙΤΟΠΟΥΛΟΥ", "Π. ΓΙΑΧΟΥ", "Χ. ΚΟΤΟΥΛΑΣ", "Χ.ΑΓΙΑΝΝΙΔΗ", "Χ.ΚΟΥΡΛΟΥ", "Χ.Μ. ΛΑΓΟΓΙΑΝΝΗ"];
+        const classes = ["Α1", "Α2", "ΒΗ", "ΒΜ", "ΒΟ", "ΒΠ", "ΒΥ", "ΓΗ", "ΓΘ", "ΓΟ", "ΓΠ", "ΓΥ"];
+        const days = ["Δευτέρα", "Τρίτη", "Τετάρτη", "Πέμπτη", "Παρασκευή"];
+        const allTimes = ["08:30", "09:15", "10:05", "10:55", "11:45", "12:30", "13:15"].filter(t => t);
+        let activeTab = 'teacher';
+        let isDark = false;
+
+        function showPwaModal() {
+            document.getElementById('pwaModal').style.display = 'flex';
+        }
+        function closePwaModal() {
+            document.getElementById('pwaModal').style.display = 'none';
+        }
+
+        function toggleDarkMode() {
+            isDark = !isDark;
+            const root = document.getElementById('bodyRoot');
+            if (isDark) {
+                root.classList.add('dark', 'bg-slate-900', 'text-slate-100');
+                root.classList.remove('bg-slate-50', 'text-slate-800');
+            } else {
+                root.classList.remove('dark', 'bg-slate-900', 'text-slate-100');
+                root.classList.add('bg-slate-50', 'text-slate-800');
+            }
+        }
+
+        function switchTab(tab) {
+            activeTab = tab;
+            ['Teacher', 'Class', 'Day', 'Stats'].forEach(t => {
+                let btn = document.getElementById('tab' + t);
+                if (t.toLowerCase() === tab) {
+                    btn.className = "py-2 px-0.5 rounded-lg text-[11px] font-bold bg-white dark:bg-slate-900 text-blue-600 shadow-sm transition";
+                } else {
+                    btn.className = "py-2 px-0.5 rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-300 transition";
+                }
+            });
+
+            const select = document.getElementById('dynamicSelect');
+            const controlGroup = document.getElementById('controlGroup');
+            select.innerHTML = '';
+
+            if (tab === 'stats') {
+                controlGroup.style.display = 'none';
+                renderStatsView();
+                return;
+            } else {
+                controlGroup.style.display = 'flex';
+            }
+
+            const label = document.getElementById('dropdownLabel');
+            if (tab === 'teacher') {
+                label.innerText = "Επιλογή Καθηγητή";
+                teachers.forEach(t => {
+                    let opt = document.createElement('option');
+                    opt.value = t; opt.innerText = t;
+                    select.appendChild(opt);
+                });
+            } else if (tab === 'class') {
+                label.innerText = "Επιλογή Τμήματος";
+                classes.forEach(c => {
+                    let opt = document.createElement('option');
+                    opt.value = c; opt.innerText = c;
+                    select.appendChild(opt);
+                });
+            } else {
+                label.innerText = "Επιλογή Ημέρας";
+                days.forEach(d => {
+                    let opt = document.createElement('option');
+                    opt.value = d; opt.innerText = d;
+                    select.appendChild(opt);
+                });
+            }
+            renderView();
+        }
+
+        function renderStatsView() {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '';
+
+            let statsCard = document.createElement('div');
+            statsCard.className = "bg-white dark:bg-slate-800 dark:text-white rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700 space-y-4";
+
+            let html = `<h3 class="font-bold border-b border-slate-100 dark:border-slate-700 pb-2 text-sm text-blue-600 dark:text-blue-400">📊 Στατιστικά & Ημέρες Παρουσίας</h3>`;
+            html += `<div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead><tr class="border-b border-slate-200 dark:border-slate-700 text-slate-400"><th class="py-2">Καθηγητής</th><th class="py-2 text-center">Μαθήματα (T)</th><th class="py-2 text-center">Κενά (G)</th><th class="py-2 text-center">Ημέρες (D)</th></tr></thead><tbody class="divide-y divide-slate-100 dark:divide-slate-700">`;
+
+            teachers.forEach(t => {
+                let tSlots = masterData.filter(x => x.teacher === t);
+                let totalLessons = tSlots.length;
+                let totalGaps = 0;
+
+                let presentDaysSet = new Set(tSlots.map(x => x.day));
+                let daysCount = presentDaysSet.size;
+
+                days.forEach(day => {
+                    let daySlots = tSlots.filter(x => x.day === day);
+                    if (daySlots.length > 0) {
+                        let teacherTimes = daySlots.map(x => x.time);
+                        let firstLessonTime = allTimes.find(tSlot => teacherTimes.includes(tSlot));
+                        let lastLessonTime = allTimes.slice().reverse().find(tSlot => teacherTimes.includes(tSlot));
+                        let firstIdx = allTimes.indexOf(firstLessonTime);
+                        let lastIdx = allTimes.indexOf(lastLessonTime);
+
+                        if (firstIdx !== -1 && lastIdx !== -1) {
+                            for (let i = firstIdx; i <= lastIdx; i++) {
+                                if (!teacherTimes.includes(allTimes[i])) {
+                                    totalGaps++;
+                                }
+                            }
+                        }
+                    }
+                });
+
+                html += `
+                    <tr>
+                        <td class="py-2.5 font-bold">${t}</td>
+                        <td class="py-2.5 text-center"><span class="bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded font-bold">${totalLessons}</span></td>
+                        <td class="py-2.5 text-center"><span class="bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded font-bold">${totalGaps}</span></td>
+                        <td class="py-2.5 text-center font-bold text-slate-600 dark:text-slate-300">${daysCount}</td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table></div>`;
+            statsCard.innerHTML = html;
+            container.appendChild(statsCard);
+        }
+
+        function renderView() {
+            if (activeTab === 'stats') return;
+            const val = document.getElementById('dynamicSelect').value;
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '';
+
+            if (!val) return;
+
+            let filtered = [];
+            if (activeTab === 'teacher') {
+                filtered = masterData.filter(x => x.teacher === val);
+            } else if (activeTab === 'class') {
+                filtered = masterData.filter(x => x.className && x.className.includes(val));
+            } else {
+                filtered = masterData.filter(x => x.day === val);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="bg-white dark:bg-slate-800 p-6 rounded-2xl text-center text-slate-400 text-sm">Δεν βρέθηκαν μαθήματα.</div>';
+                return;
+            }
+
+            if (activeTab === 'day') {
+                let timeMap = {};
+                filtered.forEach(item => {
+                    if (!timeMap[item.time]) timeMap[item.time] = [];
+                    timeMap[item.time].push(item);
+                });
+
+                let card = document.createElement('div');
+                card.className = "bg-white dark:bg-slate-800 dark:text-white rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700 space-y-3";
+                card.innerHTML = `<h3 class="font-bold border-b border-slate-100 dark:border-slate-700 pb-2 text-sm">📅 Συνολικό Πρόγραμμα Ημέρας: ${val}</h3>`;
+
+                let sortedTimeKeys = Object.keys(timeMap).sort((a,b) => a.localeCompare(b));
+
+                sortedTimeKeys.forEach(time => {
+                    let items = timeMap[time];
+                    let slotDiv = document.createElement('div');
+                    slotDiv.className = "bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-700";
+                    let html = `<div class="text-xs font-bold text-blue-600 dark:text-blue-400 mb-1.5">⏰ Ώρα: ${time}</div><div class="grid grid-cols-1 md:grid-cols-2 gap-2">`;
+
+                    items.forEach(i => {
+                        html += `
+                            <div class="bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs shadow-xs">
+                                <span class="font-bold bg-blue-50 dark:bg-slate-700 px-1.5 py-0.5 rounded text-blue-800 dark:text-blue-300">${i.className || 'Γενικό'}</span>
+                                <span class="font-medium text-slate-700 dark:text-slate-200 ml-1">${i.lesson}</span>
+                                <div class="text-slate-400 mt-1 font-semibold">👤 ${i.teacher}</div>
+                            </div>
+                        `;
+                    });
+                    html += `</div>`;
+                    slotDiv.innerHTML = html;
+                    card.appendChild(slotDiv);
+                });
+                container.appendChild(card);
+
+            } else {
+                let dayMap = {};
+                filtered.forEach(item => {
+                    if (!dayMap[item.day]) dayMap[item.day] = [];
+                    dayMap[item.day].push(item);
+                });
+
+                for (const [day, items] of Object.entries(dayMap)) {
+                    items.sort((a,b) => a.time.localeCompare(b.time));
+
+                    let activeTimes = items.map(i => i.time);
+                    let firstIdx = allTimes.indexOf(activeTimes[0]);
+                    let lastIdx = allTimes.indexOf(activeTimes[activeTimes.length - 1]);
+
+                    let fullDaySlots = [];
+                    if (firstIdx !== -1 && lastIdx !== -1) {
+                        for (let i = firstIdx; i <= lastIdx; i++) {
+                            let t = allTimes[i];
+                            let existing = items.find(x => x.time === t);
+                            if (existing) {
+                                fullDaySlots.push(existing);
+                            } else {
+                                fullDaySlots.push({ time: t, lesson: "☕ Κενή Ώρα", className: "", isGap: true });
+                            }
+                        }
+                    } else {
+                        fullDaySlots = items;
+                    }
+
+                    let gapsCount = fullDaySlots.filter(x => x.isGap).length;
+
+                    let card = document.createElement('div');
+                    card.className = "bg-white dark:bg-slate-800 dark:text-white rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700 transition-colors";
+
+                    let html = `
+                        <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2 mb-3">
+                            <h3 class="font-bold text-sm">🗓️ ${day}</h3>
+                            ${gapsCount > 0 ? `<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">☕ ${gapsCount} Κενό/ά</span>` : `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full">✨ Χωρίς κενά</span>`}
+                        </div>
+                        <div class="space-y-2">
+                    `;
+
+                    fullDaySlots.forEach(i => {
+                        if (i.isGap) {
+                            html += `
+                                <div class="flex items-center justify-between p-3 rounded-xl border bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-950/30 dark:border-emerald-800 dark:text-emerald-300 font-bold">
+                                    <div class="text-xs font-bold w-16">⏰ ${i.time}</div>
+                                    <div class="flex-1 px-3">
+                                        <div class="text-xs italic">☕ Κενή Ώρα (Διαθέσιμος/η για διάλειμμα)</div>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            html += `
+                                <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
+                                    <div class="text-xs font-bold text-slate-400 w-16">⏰ ${i.time}</div>
+                                    <div class="flex-1 px-3">
+                                        <div class="font-bold text-slate-800 dark:text-slate-100 text-sm">
+                                            <span>${i.lesson}</span>
+                                        </div>
+                                        <div class="text-xs text-blue-600 dark:text-blue-400 font-medium">${activeTab === 'teacher' ? (i.className || 'Γενικό') : ('👤 ' + i.teacher)}</div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    });
+                    html += `</div>`;
+                    card.innerHTML = html;
+                    container.appendChild(card);
+                }
+            }
+        }
+
+        function getDayNum(dayStr) {
+            if (!dayStr) return undefined;
+            let d = dayStr.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            if (d.includes('ΔΕΥ')) return 1;
+            if (d.includes('ΤΡΙ')) return 2;
+            if (d.includes('ΤΕΤ')) return 3;
+            if (d.includes('ΠΕΜ')) return 4;
+            if (d.includes('ΠΑΡ')) return 5;
+            return undefined;
+        }
+
+        function exportICS() {
+            const val = document.getElementById('dynamicSelect').value.trim();
+            let filtered = masterData.filter(x =>
+                (x.teacher && x.teacher.trim() === val) ||
+                (activeTab === 'class' && x.className && x.className.includes(val)) ||
+                (activeTab === 'day' && x.day && x.day.trim() === val)
+            );
+
+            if (filtered.length === 0) {
+                alert('Δεν υπάρχουν δεδομένα για εξαγωγή.');
+                return;
+            }
+
+            let lines = [
+                "BEGIN:VCALENDAR",
+                "VERSION:2.0",
+                "PRODID:-//School Timetable//EL",
+                "CALSCALE:GREGORIAN",
+                "METHOD:PUBLISH"
+            ];
+
+            let pad = (n) => String(n).padStart(2, '0');
+
+            filtered.forEach(item => {
+                let targetDayNum = getDayNum(item.day);
+                if (targetDayNum === undefined || !item.time) return;
+
+                let timeParts = item.time.split(':');
+                let hours = parseInt(timeParts[0]) || 8;
+                let minutes = parseInt(timeParts[1]) || 0;
+
+                let eventDate = new Date();
+                let currentDayOfWeek = eventDate.getDay();
+                if (currentDayOfWeek === 0) currentDayOfWeek = 7;
+
+                let dayDiff = targetDayNum - currentDayOfWeek;
+                if (dayDiff < 0) dayDiff += 7;
+                eventDate.setDate(eventDate.getDate() + dayDiff);
+
+                let year = eventDate.getFullYear();
+                let month = pad(eventDate.getMonth() + 1);
+                let day = pad(eventDate.getDate());
+                let hr = pad(hours);
+                let min = pad(minutes);
+
+                let dtStartStr = `${year}${month}${day}T${hr}${min}00`;
+
+                let endDate = new Date(eventDate.getTime());
+                endDate.setHours(hours, minutes + 45);
+                let endHr = pad(endDate.getHours());
+                let endMin = pad(endDate.getMinutes());
+                let dtEndStr = `${year}${month}${day}T${endHr}${endMin}00`;
+
+                let icsDayCode = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'][targetDayNum];
+
+                lines.push("BEGIN:VEVENT");
+                lines.push("UID:" + Math.random().toString(36).substring(2) + "@school.timetable");
+                lines.push("DTSTAMP:" + year + month + day + "T000000Z");
+                lines.push("DTSTART:" + dtStartStr);
+                lines.push("DTEND:" + dtEndStr);
+                lines.push("RRULE:FREQ=WEEKLY;COUNT=35;BYDAY=" + icsDayCode);
+                lines.push("SUMMARY:" + item.lesson + " (" + (item.className || 'Γενικό') + ")");
+                lines.push("DESCRIPTION:Καθηγητής: " + item.teacher);
+                lines.push("END:VEVENT");
+            });
+
+            lines.push("END:VCALENDAR");
+
+            let icsContent = lines.join("\r\n");
+            let blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            let link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.setAttribute('download', val + '_timetable.ics');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        switchTab('teacher');
+    </script>
+</body>
+</html>

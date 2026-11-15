@@ -3,60 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ωρολόγιο Πρόγραμμα - Κενά & Προγράμματα</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- PWA Meta Tags -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Σχολικό Πρόγραμμα">
-    <meta name="theme-color" content="#2563eb">
-
-    <style>body { font-family: 'Inter', sans-serif; }</style>
-</head>
-<body id="bodyRoot" class="bg-slate-50 text-slate-800 min-h-screen p-3 md:p-6 transition-colors duration-200">
-    <div class="max-w-4xl mx-auto space-y-4">
-
-        <!-- Header -->
-        <div class="bg-white dark:bg-slate-800 dark:text-white rounded-2xl shadow-sm p-5 flex justify-between items-center transition-colors">
-            <div>
-                <h1 class="text-xl font-bold">🏫 Ωρολόγιο Πρόγραμμα & Κενά</h1>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Διαχείριση ωρών & προγραμμάτων</p>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="showPwaModal()" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-300 hover:bg-blue-100 p-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1" title="Εγκατάσταση στο κινητό">
-                    📱 App
-                </button>
-                <button onclick="toggleDarkMode()" class="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 p-2.5 rounded-xl text-sm transition">
-                    🌙 / ☀️
-                </button>
-            </div>
-        </div>
-
-        <!-- Navigation Tabs & Controls -->
-        <div class="bg-white dark:bg-slate-800 dark:text-white rounded-2xl shadow-sm p-4 space-y-3 transition-colors">
-            <div class="grid grid-cols-4 gap-1 bg-slate-100 dark:bg-slate-700 p-1 rounded-xl text-center">
-                <button onclick="switchTab('teacher')" id="tabTeacher" class="py-2 px-0.5 rounded-lg text-[11px] font-bold bg-white dark:bg-slate-900 text-blue-600 shadow-sm transition">👨‍🏫 Καθηγ.</button>
-                <button onclick="switchTab('class')" id="tabClass" class="py-2 px-0.5 rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-300 transition">📚 Τμήμα</button>
-                <button onclick="switchTab('day')" id="tabDay" class="py-2 px-0.5 rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-300 transition">📅 Ημέρα</button>
-                <button onclick="switchTab('stats')" id="tabStats" class="py-2 px-0.5 rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-300 transition">📊 Στατ.</button>
-            </div>
-
-            <div class="flex gap-2 items-end" id="controlGroup">
-                <div class="flex-1">
-                    <label id="dropdownLabel" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Επιλογή</label>
-                    <select id="dynamicSelect" onchange="renderView()" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <!-- Dynamic options -->
-                    </select>
-                </div>
-                <!-- Widget 3: Pin Favorite Button -->
-<!DOCTYPE html>
-<html lang="el">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ωρολόγιο Πρόγραμμα - ΕΠΑ.Λ. ΚΡΕΣΤΕΝΩΝ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -156,7 +102,6 @@
         const allTimes = ["08:30", "09:15", "10:05", "10:55", "11:45", "12:30", "13:15"].filter(t => t);
         let activeTab = 'teacher';
         let isDark = false;
-
         function showPwaModal() {
             document.getElementById('pwaModal').style.display = 'flex';
         }
@@ -175,7 +120,8 @@
                 root.classList.add('bg-slate-50', 'text-slate-800');
             }
         }
-       // Widget 3: Favorite Profile Logic
+
+        // Widget 3: Favorite Profile Logic
         function toggleFavorite() {
             const select = document.getElementById('dynamicSelect');
             const val = select.value;
@@ -279,7 +225,6 @@
             renderView();
         }
 
-
         function renderStatsView() {
             const container = document.getElementById('resultsContainer');
             container.innerHTML = '';
@@ -334,9 +279,14 @@
 
         function renderView() {
             if (activeTab === 'stats') return;
-            const val = document.getElementById('dynamicSelect').value;
+            const selectElem = document.getElementById('dynamicSelect');
+            const val = selectElem.value;
             const container = document.getElementById('resultsContainer');
             container.innerHTML = '';
+
+            const favVal = localStorage.getItem('schoolFavVal');
+            const favTab = localStorage.getItem('schoolFavTab');
+            updateFavButtonStyle(favTab === activeTab && favVal === val);
 
             if (!val) return;
 
@@ -550,7 +500,11 @@
             document.body.removeChild(link);
         }
 
-        switchTab('teacher');
+        // Initialize App & Load Notes
+        loadNotes();
+        if (!checkFavorite()) {
+            switchTab('teacher');
+        }
     </script>
 </body>
 </html>

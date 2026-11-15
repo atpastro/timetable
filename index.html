@@ -52,6 +52,60 @@
                     </select>
                 </div>
                 <!-- Widget 3: Pin Favorite Button -->
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ωρολόγιο Πρόγραμμα - ΕΠΑ.Λ. ΚΡΕΣΤΕΝΩΝ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Σχολικό Πρόγραμμα">
+    <meta name="theme-color" content="#2563eb">
+
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body id="bodyRoot" class="bg-slate-50 text-slate-800 min-h-screen p-3 md:p-6 transition-colors duration-200">
+    <div class="max-w-4xl mx-auto space-y-4">
+
+        <!-- Header -->
+        <div class="bg-white dark:bg-slate-800 dark:text-white rounded-2xl shadow-sm p-5 flex justify-between items-center transition-colors">
+            <div>
+                <h1 class="text-xl font-bold">🏫 Ωρολόγιο Πρόγραμμα </h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">ΕΠΑ.Λ. ΚΡΕΣΤΕΝΩΝ</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="showPwaModal()" class="bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-300 hover:bg-blue-100 p-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1" title="Εγκατάσταση στο κινητό">
+                    📱 App
+                </button>
+                <button onclick="toggleDarkMode()" class="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 p-2.5 rounded-xl text-sm transition">
+                    🌙 / ☀️
+                </button>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs & Controls -->
+        <div class="bg-white dark:bg-slate-800 dark:text-white rounded-2xl shadow-sm p-4 space-y-3 transition-colors">
+            <div class="grid grid-cols-4 gap-1 bg-slate-100 dark:bg-slate-700 p-1 rounded-xl text-center">
+                <button onclick="switchTab('teacher')" id="tabTeacher" class="py-2 px-0.5 rounded-lg text-[11px] font-bold bg-white dark:bg-slate-900 text-blue-600 shadow-sm transition">👨‍🏫 Καθηγ.</button>
+                <button onclick="switchTab('class')" id="tabClass" class="py-2 px-0.5 rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-300 transition">📚 Τμήμα</button>
+                <button onclick="switchTab('day')" id="tabDay" class="py-2 px-0.5 rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-300 transition">📅 Ημέρα</button>
+                <button onclick="switchTab('stats')" id="tabStats" class="py-2 px-0.5 rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-300 transition">📊 Στατ.</button>
+            </div>
+
+            <div class="flex gap-2 items-end" id="controlGroup">
+                <div class="flex-1">
+                    <label id="dropdownLabel" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Επιλογή</label>
+                    <select id="dynamicSelect" onchange="renderView()" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <!-- Dynamic options -->
+                    </select>
+                </div>
+                <!-- Widget 3: Pin Favorite Button -->
                 <button onclick="toggleFavorite()" id="favBtn" class="bg-amber-100 dark:bg-amber-950/60 hover:bg-amber-200 text-amber-800 dark:text-amber-300 font-semibold text-xs px-3.5 py-3 rounded-xl transition shadow-sm h-[46px] flex items-center justify-center" title="Αποθήκευση ως αγαπημένο">
                     ⭐
                 </button>
@@ -64,6 +118,15 @@
         <!-- Results Display Container -->
         <div id="resultsContainer" class="space-y-4">
             <!-- Cards rendered here -->
+        </div>
+
+        <!-- Widget 4: Personal Notes / Todo Card -->
+        <div class="bg-white dark:bg-slate-800 dark:text-white rounded-2xl shadow-sm p-5 border border-slate-200 dark:border-slate-700 space-y-3 transition-colors">
+            <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
+                <h3 class="font-bold text-sm flex items-center gap-2">📝 Προσωπικές Σημειώσεις / Υπενθυμίσεις</h3>
+                <span id="saveStatus" class="text-[10px] text-slate-400">Αυτόματη αποθήκευση</span>
+            </div>
+            <textarea id="teacherNotes" oninput="saveNotes()" placeholder="Γράψτε εδώ τις σημειώσεις σας για τα μαθήματα, εκκρεμότητες ή υπενθυμίσεις της εβδομάδας..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y min-h-[90px]"></textarea>
         </div>
 
     </div>

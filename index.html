@@ -112,6 +112,54 @@
                 root.classList.add('bg-slate-50', 'text-slate-800');
             }
         }
+       // Widget 3: Favorite Profile Logic
+        function toggleFavorite() {
+            const select = document.getElementById('dynamicSelect');
+            const val = select.value;
+            if (!val) return;
+            localStorage.setItem('schoolFavTab', activeTab);
+            localStorage.setItem('schoolFavVal', val);
+            updateFavButtonStyle(true);
+            alert(`Αποθηκεύτηκε στα αγαπημένα: ${val}`);
+        }
+
+        function checkFavorite() {
+            const favVal = localStorage.getItem('schoolFavVal');
+            const favTab = localStorage.getItem('schoolFavTab');
+            if (favVal && favTab) {
+                switchTab(favTab);
+                document.getElementById('dynamicSelect').value = favVal;
+                updateFavButtonStyle(true);
+                renderView();
+                return true;
+            }
+            return false;
+        }
+
+        function updateFavButtonStyle(isFav) {
+            const btn = document.getElementById('favBtn');
+            if (isFav) {
+                btn.className = "bg-amber-500 text-white font-semibold text-xs px-3.5 py-3 rounded-xl transition shadow-sm h-[46px] flex items-center justify-center";
+            } else {
+                btn.className = "bg-amber-100 dark:bg-amber-950/60 hover:bg-amber-200 text-amber-800 dark:text-amber-300 font-semibold text-xs px-3.5 py-3 rounded-xl transition shadow-sm h-[46px] flex items-center justify-center";
+            }
+        }
+
+        // Widget 4: Notes Logic
+        function saveNotes() {
+            const notes = document.getElementById('teacherNotes').value;
+            localStorage.setItem('schoolTeacherNotes', notes);
+            const status = document.getElementById('saveStatus');
+            status.innerText = "Αποθηκεύτηκε ✓";
+            setTimeout(() => { status.innerText = "Αυτόματη αποθήκευση"; }, 2000);
+        }
+
+        function loadNotes() {
+            const savedNotes = localStorage.getItem('schoolTeacherNotes');
+            if (savedNotes) {
+                document.getElementById('teacherNotes').value = savedNotes;
+            }
+        }
 
         function switchTab(tab) {
             activeTab = tab;
@@ -159,8 +207,15 @@
                     select.appendChild(opt);
                 });
             }
+            
+            // Check if current selection matches favorite
+            const favVal = localStorage.getItem('schoolFavVal');
+            const favTab = localStorage.getItem('schoolFavTab');
+            updateFavButtonStyle(favTab === activeTab && favVal === select.value);
+            
             renderView();
         }
+
 
         function renderStatsView() {
             const container = document.getElementById('resultsContainer');
